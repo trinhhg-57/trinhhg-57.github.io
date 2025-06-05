@@ -75,7 +75,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let currentMode = 'default';
   let currentUser = null;
   const LOCAL_STORAGE_KEY = 'local_settings';
-  const SESSION_KEY = 'active_sessions'; // Sử dụng object để lưu nhiều phiên
+  const SESSION_KEY = 'active_sessions'; // Lưu trạng thái phiên
   const ACCOUNTS_STORAGE_KEY = 'accounts';
 
   function escapeHtml(str) {
@@ -326,6 +326,12 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  function generateDeviceId() {
+    const userAgent = navigator.userAgent;
+    const timestamp = Date.now();
+    return `${userAgent}-${timestamp}`;
+  }
+
   function checkLoginStatus() {
     console.log('Checking login status...');
     const user = JSON.parse(localStorage.getItem('currentUser') || '{}');
@@ -353,7 +359,8 @@ document.addEventListener('DOMContentLoaded', () => {
       const account = accounts.find(acc => acc.username === user.username && acc.password === user.password);
       if (!account) {
         localStorage.removeItem('currentUser');
-        localStorage.removeItem(SESSION_KEY);
+        delete activeSessions[user.username];
+        localStorage.setItem(SESSION_KEY, JSON.stringify(activeSessions));
         loginContainer.style.display = 'block';
         mainContainer.style.display = 'none';
       } else if (account.locked || (!account.isAdmin && account.expiry && Date.now() >= account.expiry)) {
@@ -363,14 +370,14 @@ document.addEventListener('DOMContentLoaded', () => {
         showNotification(translations[currentLang].keyExpired, 'error');
         loginContainer.style.display = 'block';
         mainContainer.style.display = 'none';
-      } else if (activeSessions[user.username] && activeSessions[user.username] !== deviceId) {
+      } else if (activeSessions[user.username] && activeSessions[user.username].deviceId !== deviceId) {
         showNotification(translations[currentLang].sessionTaken, 'error');
         localStorage.removeItem('currentUser');
         loginContainer.style.display = 'block';
         mainContainer.style.display = 'none';
       } else {
         currentUser = account;
-        activeSessions[user.username] = deviceId; // Cập nhật session
+        activeSessions[user.username] = { deviceId: deviceId, timestamp: Date.now() };
         localStorage.setItem(SESSION_KEY, JSON.stringify(activeSessions));
         loginContainer.style.display = 'none';
         mainContainer.style.display = 'block';
@@ -386,12 +393,6 @@ document.addEventListener('DOMContentLoaded', () => {
       loginContainer.style.display = 'block';
       mainContainer.style.display = 'none';
     }
-  }
-
-  function generateDeviceId() {
-    const userAgent = navigator.userAgent;
-    const timestamp = Date.now();
-    return `${userAgent}-${timestamp}`;
   }
 
   function updateKeyTimer(expiry) {
@@ -471,7 +472,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const activeSessions = JSON.parse(localStorage.getItem(SESSION_KEY) || '{}');
     const deviceId = generateDeviceId();
 
-    if (activeSessions[username] && activeSessions[username] !== deviceId) {
+    if (activeSessions[username]) {
       showNotification(translations[currentLang].sessionTaken, 'error');
       usernameInput.value = '';
       passwordInput.value = '';
@@ -480,7 +481,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     currentUser = userAccount;
     localStorage.setItem('currentUser', JSON.stringify({ username, password }));
-    activeSessions[username] = deviceId; // Lưu session cho tài khoản
+    activeSessions[username] = { deviceId: deviceId, timestamp: Date.now() };
     localStorage.setItem(SESSION_KEY, JSON.stringify(activeSessions));
     document.getElementById('login-container').style.display = 'none';
     document.getElementById('main-container').style.display = 'block';
@@ -895,7 +896,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   window.addEventListener('storage', (event) => {
-    if (event.key === ACCOUNTS_STORAGE_KEY) {
+    if (event.key === SESSION_KEY || event.key === ACCOUNTS_STORAGE_KEY) {
       checkLoginStatus();
     }
   });
