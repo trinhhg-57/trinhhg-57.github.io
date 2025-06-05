@@ -415,11 +415,8 @@ textarea {
     flex-direction: column;
   }
 
-  .action-buttons {
-    flex-direction: wrap;
-    button {
-      width: 100%;
-    }
+  .action-buttons button {
+    width: 100%;
   }
 
   .punctuation-item {
@@ -436,11 +433,6 @@ textarea {
 
   .input-section, .split-container {
     flex-direction: column;
-    min-width: wrap;
-  }
-
-  .split-container {
-    flex-direction: column;
   }
 
   .input-section, .output-section {
@@ -452,10 +444,9 @@ textarea {
     font-size: 12px;
   }
 
-  .notification-container {
+  #notification-container {
     top: 5px;
     right: 5px;
-    position: fixed;
   }
 
   .notification {
