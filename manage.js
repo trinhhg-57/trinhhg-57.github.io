@@ -6,8 +6,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const translations = {
     vn: {
-      appTitle: 'Quản Lý - Tiện Ích Của Trịnh Hg',
-      manageTitle: 'Quản Lý Tài Khoản',
+      appTitle: 'Quản Lý Tài Khoản',
       lockAccount: 'Khóa',
       activateAccount: 'Kích hoạt',
       adminAccount: 'Tài khoản admin không có thời hạn',
@@ -23,7 +22,6 @@ document.addEventListener('DOMContentLoaded', () => {
     currentLang = lang;
     document.documentElement.lang = lang;
     document.getElementById('app-title').textContent = translations[lang].appTitle;
-    document.getElementById('manage-title').textContent = translations[lang].manageTitle;
   }
 
   function showNotification(message, type = 'success') {
@@ -91,12 +89,12 @@ document.addEventListener('DOMContentLoaded', () => {
       const lockButton = document.createElement('button');
       lockButton.className = 'lock-button';
       lockButton.textContent = translations[currentLang].lockAccount;
-      lockButton.style.display = account.locked ? 'none' : 'inline-block';
+      lockButton.disabled = account.locked;
 
       const activateButton = document.createElement('button');
       activateButton.className = 'activate-button';
       activateButton.textContent = translations[currentLang].activateAccount;
-      activateButton.style.display = account.locked ? 'inline-block' : 'none';
+      activateButton.disabled = !account.locked;
 
       const handleLock = () => {
         updateAccount(account.username, { locked: true });
