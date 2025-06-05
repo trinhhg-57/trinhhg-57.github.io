@@ -361,7 +361,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('manage-button').style.display = account.isAdmin ? 'inline-block' : 'none';
         if (!account.isAdmin) {
           document.getElementById('key-timer-user').style.display = 'block';
-          updateKeyTimer(account.expiry, document.getElementById('key-timer-user'));
+          window.updateKeyTimer(account.expiry, document.getElementById('key-timer-user'));
         } else {
           document.getElementById('key-timer-user').style.display = 'none';
         }
@@ -372,8 +372,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // Dòng 375: Export function updateKeyTimer
-  export function updateKeyTimer(expiry, timerElement) {
+  // Định nghĩa updateKeyTimer là hàm toàn cục
+  window.updateKeyTimer = function(expiry, timerElement) {
     if (!timerElement) {
       showNotification(translations[currentLang].resourceError, 'error');
       return;
@@ -399,7 +399,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     timerUpdate();
     const timerInterval = setInterval(timerUpdate, 1000);
-  }
+  };
 
   function handleLogin() {
     console.log('login attempt');
@@ -453,7 +453,7 @@ document.addEventListener('DOMContentLoaded', () => {
     usernameInput.value = '';
     passwordInput.value = '';
     if (!userAccount.isAdmin) {
-      updateKeyTimer(userAccount.expiry, document.getElementById('key-timer-user'));
+      window.updateKeyTimer(userAccount.expiry, document.getElementById('key-timer-user'));
     }
   }
 
