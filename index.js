@@ -326,6 +326,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function checkLoginStatus() {
     console.log('Checking login status...');
+    // Đồng bộ trạng thái locked trước khi kiểm tra
+    syncLockedStates();
+
     const user = JSON.parse(localStorage.getItem('currentUser') || '{}');
     const loginContainer = document.getElementById('login-container');
     const mainContainer = document.getElementById('main-container');
@@ -348,17 +351,20 @@ document.addEventListener('DOMContentLoaded', () => {
       console.log('Found user in localStorage:', user);
       const account = accounts.find(acc => acc.username === user.username && acc.password === user.password);
       if (!account) {
+        console.log('Account not found, logging out...');
         localStorage.removeItem('currentUser');
         loginContainer.style.display = 'block';
         mainContainer.style.display = 'none';
         keyTimerElement.textContent = '';
       } else if (account.locked) {
+        console.log('Account is locked, logging out...');
         localStorage.removeItem('currentUser');
         showNotification(translations[currentLang].accountLocked, 'error');
         loginContainer.style.display = 'block';
         mainContainer.style.display = 'none';
         keyTimerElement.textContent = translations[currentLang].accountLocked;
       } else if (!account.isAdmin && account.expiry && Date.now() >= account.expiry) {
+        console.log('Account expired, logging out...');
         localStorage.removeItem('currentUser');
         showNotification(translations[currentLang].keyExpired, 'error');
         loginContainer.style.display = 'block';
@@ -386,6 +392,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       }
     } else {
+      console.log('No user found in localStorage, showing login...');
       loginContainer.style.display = 'block';
       mainContainer.style.display = 'none';
       keyTimerElement.textContent = '';
@@ -394,6 +401,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function handleLogin() {
     console.log('login attempt');
+    // Đồng bộ trước khi đăng nhập
+    syncLockedStates();
+
     const usernameInput = document.getElementById('username');
     const passwordInput = document.getElementById('password');
     if (!usernameInput || !passwordInput) {
@@ -877,7 +887,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   try {
     console.log('Initializing app...');
-    syncLockedStates(); // Đồng bộ trạng thái locked khi tải trang
+    syncLockedStates();
     updateLanguage('vn');
     loadModes();
     attachButtonEvents();
