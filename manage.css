@@ -60,7 +60,12 @@ h1 {
   background: #dc3545;
 }
 
-.lock-button:hover {
+.lock-button:disabled {
+  background: #6c757d;
+  cursor: not-allowed;
+}
+
+.lock-button:not(:disabled):hover {
   background: #c82333;
 }
 
@@ -68,7 +73,12 @@ h1 {
   background: #28a745;
 }
 
-.activate-button:hover {
+.activate-button:disabled {
+  background: #6c757d;
+  cursor: not-allowed;
+}
+
+.activate-button:not(:disabled):hover {
   background: #218838;
 }
 
