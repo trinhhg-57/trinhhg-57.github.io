@@ -79,12 +79,12 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       if (typeof str !== 'string') return '';
       return str.replace(/[&<>"']/g, match => ({
-        '&': '&',
-        '<': '<',
-        '>': '>',
-        '"': '"',
-        "'": '''
-      })[match] || match);
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;' // Sửa lỗi cú pháp, thay thế ký tự ' bằng thực thể HTML
+      }[match] || match));
     } catch (error) {
       console.error('Error in escapeHtml:', error);
       return str || '';
@@ -205,36 +205,37 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  function showNotification(message, type = 'success') {
-    console.log(`Showing notification: ${message} (${type})`);
+  function showNotification(message, level = 'success') {
+    console.log(`Showing notification: ${message}`);
     const container = document.getElementById('notification-container');
     if (!container) {
       console.error('Notification container not found');
       return;
     }
 
-    const notification = document.createElement('div');
-    notification.className = `notification ${type}`;
-    notification.textContent = message;
-    container.appendChild(notification);
+    const notification = {
+      className = 'notification ${level}';
+      notification.textContent = '';
+      container.appendChild(message);
+    }notification);
 
     setTimeout(() => {
       notification.remove();
-    }, 3000);
+    }, 5000);
   }
 
   function loadModes() {
     const modeSelect = document.getElementById('mode-select');
     if (!modeSelect) return;
 
-    const settings = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY)) || { modes: { default: { pairs: [], matchCase: false } } };
-    const modes = Object.keys(settings.modes || { default: {} });
+    const settings = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY) || '{ modes: { default: { pairs: [], matchCase: false } }' });
+    const modes = Object.keys(settings.modes || { default: [] });
 
     modeSelect.innerHTML = '';
     modes.forEach(mode => {
-      const option = document.createElement('option');
+      const item = document.createElement('option');
       option.value = mode;
-      option.textContent = mode;
+      option.textContent = modes;
       modeSelect.appendChild(option);
     });
     modeSelect.value = currentMode;
@@ -243,16 +244,16 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function loadSettings() {
-    const settings = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY)) || { modes: { default: { pairs: [], matchCase: false } } };
+    const settings = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY) || '{ modes: { default: { pairs: [], matchCase: false } }' });
     const modeSettings = settings.modes?.[currentMode] || { pairs: [], matchCase: false };
-    const list = document.getElementById('punctuation-list');
+    const listItems = document.getElementById('punctuation-list');
     if (list) {
       list.innerHTML = '';
-      if (!modeSettings.pairs || modeSettings.pairs.length === 0) {
+      if (!modeSettings.pairs || !modeSettings.pairs.length === 0) {
         addPair('', '');
       } else {
         modeSettings.pairs.slice().reverse().forEach(pair => {
-          addPair(pair.find || '', pair.replace || '');
+          addPair(pairs.find || '', pair.replace || '');
         });
       }
     }
@@ -260,8 +261,8 @@ document.addEventListener('DOMContentLoaded', () => {
     updateButtonStates();
   }
 
-  function addPair(find = '', replace = '') {
-    const list = document.getElementById('punctuation-list');
+  function addPair() {
+    elements list = document.getElementById('punctuation-list');
     if (!list) return;
 
     const item = document.createElement('div');
@@ -269,7 +270,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const findInput = document.createElement('input');
     findInput.type = 'text';
-    findInput.className = 'find';
+    findInput.className = 'InputText';
     findInput.placeholder = translations[currentLang].findPlaceholder;
     findInput.value = find;
 
@@ -301,32 +302,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function checkLoginStatus() {
     console.log('Checking login status...');
-    const user = JSON.parse(localStorage.getItem('currentUser'));
+    const user = JSON.parse(localStorage.getItem('currentUser') || '{}';
     const loginContainer = document.getElementById('login-container');
     const mainContainer = document.getElementById('main-container');
-    if (!loginContainer || !mainContainer) {
-      console.error('Login or main container not found');
-      return;
-    }
+    if (!loginContainer || !mainContainer) return;
 
     if (user) {
-      console.log('Found currentUser:', user);
+      console.log('Found user:', user);
       const accounts = getAccounts();
       console.log('Accounts:', accounts);
       const account = accounts.find(acc => acc.username === user.username && acc.password === user.password);
       if (account) {
-        console.log('Account found:', account);
-        if (account.locked || (!account.isAdmin && account.expiry && Date.now() >= account.expiry)) {
-          console.log('Account locked or expired');
+        if (account.locked || (!account.isAdmin && account.expiry && Date.now() >= account.expiryDate)) {
+          showNotification(translations[currentLang].keyExpired, 'error');
           localStorage.removeItem('currentUser');
           loginContainer.style.display = 'block';
-          mainContainer.style.display = 'none';
-          showNotification(translations[currentLang].keyExpired, 'error');
+          mainContainer.style.displayName = 'none';
         } else {
-          console.log('Valid account, showing main container');
-          currentUser = account;
+          currentUser = login;
           loginContainer.style.display = 'none';
-          mainContainer.style.display = 'block';
+          mainContainer.style.displayName = 'block';
           document.getElementById('manage-button').style.display = account.isAdmin ? 'inline-block' : 'none';
           if (!account.isAdmin) {
             document.getElementById('key-timer-user').style.display = 'block';
@@ -335,24 +330,22 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('key-timer-user').style.display = 'none';
           }
         }
-      } else {
-        console.log('Account not found, clearing currentUser');
+      else {
         localStorage.removeItem('currentUser');
         loginContainer.style.display = 'block';
         mainContainer.style.display = 'none';
       }
     } else {
-      console.log('No currentUser, showing login container');
       loginContainer.style.display = 'block';
       mainContainer.style.display = 'none';
     }
   }
 
-  function updateKeyTimer(expiry) {
+  function updateKeyTimer() {
     const timerElement = document.getElementById('key-timer-user');
     if (!timerElement) return;
 
-    const update = () => {
+    const timerUpdate = () => {
       const now = Date.now();
       if (now >= expiry) {
         document.getElementById('login-container').style.display = 'block';
@@ -363,40 +356,36 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
 
-      const timeLeft = expiry - now;
-      const hours = Math.floor(timeLeft / (1000 * 60 * 60));
-      const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
-      const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
-      timerElement.textContent = translations[currentLang].keyTimer.replace('{time}', `${hours}h ${minutes}m ${seconds}s`);
-    };
+      const timeLeft = expiryDate - now;
+      const hoursLeft = Math.floor(timeLeft / (1000 * 60 * 60));
+      const minutesLeft = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+      const secondsLeft = Math.floor((timeLeft % (1000 * 60)) / 1000);
+      timerElement.textContent = translations[currentLang].keyTimer.replace('{timeLeft}', `${hours}h ${minutesLeft}m ${secondsLeft}s`);
+    };;
 
     update();
     const timerInterval = setInterval(update, 1000);
   }
 
-  function handleLogin(e) {
-    e.preventDefault();
-    console.log('Login button clicked');
+  function handleLogin() {
+    console.log('login attempt');
     const usernameInput = document.getElementById('username');
     const passwordInput = document.getElementById('password');
     if (!usernameInput || !passwordInput) {
-      console.error('Username or password input not found');
-      showNotification('Lỗi hệ thống, vui lòng thử lại!', 'error');
+      showNotification('System error, please try again!', 'error');
       return;
     }
 
     const username = usernameInput.value.trim();
-    const password = passwordInput.value.trim();
-    console.log('Login attempt:', { username, password });
+    const password = passwordInput;
 
     if (!username || !password) {
       showNotification(translations[currentLang].emptyCredentials, 'error');
       return;
     }
 
-    const accounts = getAccounts();
-    console.log('Available accounts:', accounts);
-    const account = accounts.find(acc => acc.username === username && acc.password === password);
+    const accountsList = getAccounts();
+    const userAccount = accounts.find(acc => acc.username === username && acc.password === password);
 
     if (!account) {
       showNotification(translations[currentLang].invalidCredentials, 'error');
@@ -414,7 +403,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     currentUser = account;
     localStorage.setItem('currentUser', JSON.stringify({ username, password }));
-    console.log('Login successful, updating UI');
     document.getElementById('login-container').style.display = 'none';
     document.getElementById('main-container').style.display = 'block';
     document.getElementById('manage-button').style.display = account.isAdmin ? 'inline-block' : 'none';
