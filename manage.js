@@ -67,11 +67,15 @@ document.addEventListener('DOMContentLoaded', () => {
       } else if (account.locked) {
         expiryCell.textContent = 'Đã khóa';
       } else if (account.expiry) {
-        const keyTimerSpan = document.createElement('span');
-        keyTimerSpan.className = 'key-timer';
-        keyTimerSpan.dataset.username = account.username;
-        expiryCell.appendChild(keyTimerSpan);
-        window.updateKeyTimer(account.expiry, keyTimerSpan);
+        const timeLeft = account.expiry - Date.now();
+        if (timeLeft > 0) {
+          const hoursLeft = Math.floor(timeLeft / (1000 * 60 * 60));
+          const minutesLeft = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+          const secondsLeft = Math.floor((timeLeft % (1000 * 60)) / 1000);
+          expiryCell.textContent = translations[currentLang].keyTimer.replace('{time}', `${hoursLeft}h ${minutesLeft}m ${secondsLeft}s`);
+        } else {
+          expiryCell.textContent = translations[currentLang].keyExpired;
+        }
       } else {
         expiryCell.textContent = 'Không có thời hạn';
       }
