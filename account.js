@@ -6,7 +6,7 @@ const initialAccounts = [
     username: "trinhhg",
     password: "trinhhg572007",
     isAdmin: true,
-    locked: false,
+    locked: true,
     expiry: null // Admin không có thời hạn
   },
   {
