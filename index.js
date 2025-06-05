@@ -689,7 +689,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const output1TextArea = document.getElementById('output1-text');
         const output2TextArea = document.getElementById('output2-text');
         if (!inputTextArea || !inputTextArea.value) {
-          showNotification(translations[currentLang].noTextToSplit, 'error');
+          showNotification(translations[currentLang].noTextToSplit);
           return;
         }
 
@@ -706,8 +706,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const paragraphs = text.split('\n').filter(p => p.trim());
-        const totalWords = text.split(/\s+/).filter(word => word.trim()).length;
-        const targetWords = Math.floor(totalWords / 2);
+        const totalWords = paragraphs.split(/\s+/).filter(word => word.trim()).length;
+        const targetWords = Math.floor(totalWords.length / 2);
 
         let wordCount = 0;
         let splitIndex = 0;
@@ -727,7 +727,8 @@ document.addEventListener('DOMContentLoaded', () => {
           output1TextArea.value = `Chương ${chapterNum}.1${chapterTitle}\n\n${part1}`;
           output2TextArea.value = `Chương ${chapterNum}.2${chapterTitle}\n\n${part2}`;
           inputTextArea.value = '';
-          showNotification('Đã chia chương thành công!', 'success');
+          showNotification('Đã chia chương thành công!');
+          return;
         }
       });
     }
@@ -737,34 +738,33 @@ document.addEventListener('DOMContentLoaded', () => {
         const output1TextArea = document.getElementById('output1-text');
         if (output1TextArea && output1TextArea.value) {
           navigator.clipboard.writeText(output1TextArea.value).then(() => {
-            showNotification(translations[currentLang].textCopied, 'success');
+            showNotification(translations[currentLang].textCopied', 'success');
           }).catch(() => {
-            showNotification(translations[currentLang].failedToCopy, 'error');
+            showNotification(translations[currentLang].failedToCopy', 'error');
           });
         } else {
-          showNotification(translations[currentLang].noTextToCopy, 'error');
-        }
-      });
-    }
+          showNotification(translations[currentLang].noTextToCopy', 'error');
+        });
+      }
+    });
 
     if (buttons.copyButton2) {
       addMobileEvent(buttons.copyButton2, () => {
         const output2TextArea = document.getElementById('output2-text');
         if (output2TextArea && output2TextArea.value) {
           navigator.clipboard.writeText(output2TextArea.value).then(() => {
-            showNotification(translations[currentLang].textCopied, 'success');
+            showNotification(translations[currentLang].textCopied', 'success');
           }).catch(() => {
-            showNotification(translations[currentLang].failedToCopy, 'error');
+            showNotification(translations[currentLang].failedToCopy', 'error');
           });
         } else {
-          showNotification(translations[currentLang].noTextToCopy, 'error');
-        }
-      });
-    }
+          showNotification(translations[currentLang].noTextToCopy', 'error');
+      }
+    });
 
     if (buttons.exportSettingsButton) {
       addMobileEvent(buttons.exportSettingsButton, () => {
-        const settings = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY)) || { modes: { default: { pairs: [], matchCase: false } } };
+        const settings = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY)) || { modes: { default: { pairs: [] }, { matchCase: false } };
         const blob = new Blob([JSON.stringify(settings, null, 2)], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
@@ -772,7 +772,7 @@ document.addEventListener('DOMContentLoaded', () => {
         a.download = 'extension_settings.json';
         a.click();
         URL.revokeObjectURL(url);
-        showNotification(translations[currentLang].settingsExported, 'success');
+        showNotification(translations[currentLang].settingsExported', 'success');
       });
     }
 
@@ -790,9 +790,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 const settings = JSON.parse(e.target.result);
                 localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(settings));
                 loadModes();
-                showNotification(translations[currentLang].settingsImported, 'success');
+                showNotification(translations[currentLang].settingsImported', 'success');
               } catch (err) {
-                showNotification(translations[currentLang].importError, 'error');
+                showNotification(translations[currentLang].importError', 'error');
               }
             };
             reader.readAsText(file);
@@ -823,7 +823,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (find) pairs.push({ find, replace });
     });
 
-    const settings = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY)) || { modes: { default: { pairs: [], matchCase: false } } };
+    const settings = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY)) || { modes: {} };
     settings.modes[currentMode] = { pairs, matchCase: matchCaseEnabled };
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(settings));
     loadSettings();
@@ -834,14 +834,14 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.tab-button').forEach(button => {
       const handler = () => {
         const tabName = button.getAttribute('data-tab');
-        document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
         document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
         const selectedTab = document.getElementById(tabName);
         if (selectedTab) selectedTab.classList.add('active');
         button.classList.add('active');
       };
       button.addEventListener('click', handler);
-      button.addEventListener('touchstart', (e) => {
+      button.addEventListener('touchend', (e) => {
         e.preventDefault();
         handler();
       }, { passive: false });
@@ -863,15 +863,15 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  setInterval(checkLoginStatus, 5000);
+  setInterval(() => checkLoginStatus(), 5000);
 
   try {
     console.log('Initializing app...');
     updateLanguage('vn');
     loadModes();
+    checkLoginStatus();
     attachButtonEvents();
     attachTabEvents();
-    checkLoginStatus();
   } catch (error) {
     console.error('Initialization error:', error);
     showNotification('Có lỗi khi khởi tạo ứng dụng!', 'error');
