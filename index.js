@@ -80,11 +80,11 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       if (typeof str !== 'string') return '';
       return str.replace(/[&<>"']/g, match => ({
-        '&': '&',
-        '<': '<',
-        '>': '>',
-        '"': '"',
-        "'": ''' // Sử dụng thực thể HTML hợp lệ cho dấu nháy đơn
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;', // Sửa lỗi: thay thế " bằng &quot;
+        "'": '&apos;' // Sửa lỗi: thay thế ' bằng &apos;
       }[match] || match));
     } catch (error) {
       console.error('Error in escapeHtml:', error);
@@ -336,7 +336,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let accounts;
     try {
-      accounts = getAccounts(); // Lấy dữ liệu mới từ account.js
+      accounts = getAccounts();
     } catch (e) {
       console.error('Failed to load accounts:', e);
       showNotification(translations[currentLang].resourceError, 'error');
@@ -347,7 +347,6 @@ document.addEventListener('DOMContentLoaded', () => {
       console.log('Found user in localStorage:', user);
       const account = accounts.find(acc => acc.username === user.username && acc.password === user.password);
       if (account) {
-        // Kiểm tra lại locked từ account.js ngay cả khi đã đăng nhập
         if (account.locked || (!account.isAdmin && account.expiry && Date.now() >= account.expiry)) {
           showNotification(translations[currentLang].keyExpired, 'error');
           localStorage.removeItem('currentUser');
