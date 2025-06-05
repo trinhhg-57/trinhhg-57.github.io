@@ -1,5 +1,5 @@
 // index.js
-import { getAccounts, updateAccount } from './account.js';
+import { getAccounts, updateAccount, syncLockedStates } from './account.js';
 
 document.addEventListener('DOMContentLoaded', () => {
   console.log('DOM fully loaded');
@@ -877,6 +877,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   try {
     console.log('Initializing app...');
+    syncLockedStates(); // Đồng bộ trạng thái locked khi tải trang
     updateLanguage('vn');
     loadModes();
     attachButtonEvents();
