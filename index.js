@@ -83,7 +83,7 @@ document.addEventListener('DOMContentLoaded', () => {
         '<': '&lt;',
         '>': '&gt;',
         '"': '&quot;',
-        "'": '&apos;' // Sửa lỗi cú pháp, dùng thực thể HTML và đảm bảo cú pháp đúng
+        "'": '&apos;' // Sửa lỗi cú pháp, dùng thực thể HTML &apos;
       }[match] || match));
     } catch (error) {
       console.error('Error in escapeHtml:', error);
