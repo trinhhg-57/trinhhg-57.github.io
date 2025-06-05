@@ -61,11 +61,12 @@ document.addEventListener('DOMContentLoaded', () => {
       passwordPlaceholder: 'Nhập mật khẩu',
       loginButton: 'Đăng Nhập',
       keyTimer: 'Thời gian còn lại: {time}',
-      keyExpired: 'Tài khoản của bạn đã hết thời gian sử dụng hãy gia hạn thêm!',
+      keyExpired: 'Tài khoản của bạn đã hết thời gian sử dụng hoặc bị khóa!',
       invalidCredentials: 'Tên đăng nhập hoặc mật khẩu không đúng!',
       loginSuccess: 'Đăng nhập thành công!',
       emptyCredentials: 'Vui lòng nhập đầy đủ tên đăng nhập và mật khẩu!',
-      resourceError: 'Không thể tải tài nguyên, vui lòng làm mới trang hoặc kiểm tra kết nối!'
+      resourceError: 'Không thể tải tài nguyên, vui lòng làm mới trang hoặc kiểm tra kết nối!',
+      sessionTaken: 'Tài khoản đã được sử dụng trên thiết bị khác, vui lòng đăng nhập lại!'
     }
   };
 
@@ -74,17 +75,18 @@ document.addEventListener('DOMContentLoaded', () => {
   let currentMode = 'default';
   let currentUser = null;
   const LOCAL_STORAGE_KEY = 'local_settings';
+  const SESSION_KEY = 'active_session';
   const ACCOUNTS_STORAGE_KEY = 'accounts';
 
   function escapeHtml(str) {
     try {
       if (typeof str !== 'string') return '';
       return str.replace(/[&<>"']/g, match => ({
-        '&': '&amp;',
-        '<': '&lt;',
-        '>': '&gt;',
-        '"': '&quot;', // Sửa lỗi: thay thế " bằng &quot;
-        "'": '&apos;' // Sửa lỗi: thay thế ' bằng &apos;
+        '&': '&',
+        '<': '<',
+        '>': '>',
+        '"': '"',
+        "'": "'"
       }[match] || match));
     } catch (error) {
       console.error('Error in escapeHtml:', error);
@@ -336,12 +338,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let accounts;
     try {
-      accounts = getAccounts();
+      accounts = getAccounts(); // Lấy dữ liệu mới từ account.js
     } catch (e) {
       console.error('Failed to load accounts:', e);
       showNotification(translations[currentLang].resourceError, 'error');
       return;
     }
+
+    const currentSession = localStorage.getItem(SESSION_KEY);
+    const deviceId = generateDeviceId(); // Tạo ID duy nhất cho thiết bị/trình duyệt
 
     if (user && user.username && user.password) {
       console.log('Found user in localStorage:', user);
@@ -350,10 +355,18 @@ document.addEventListener('DOMContentLoaded', () => {
         if (account.locked || (!account.isAdmin && account.expiry && Date.now() >= account.expiry)) {
           showNotification(translations[currentLang].keyExpired, 'error');
           localStorage.removeItem('currentUser');
+          localStorage.removeItem(SESSION_KEY);
+          loginContainer.style.display = 'block';
+          mainContainer.style.display = 'none';
+        } else if (currentSession && currentSession !== deviceId) {
+          showNotification(translations[currentLang].sessionTaken, 'error');
+          localStorage.removeItem('currentUser');
+          localStorage.removeItem(SESSION_KEY);
           loginContainer.style.display = 'block';
           mainContainer.style.display = 'none';
         } else {
           currentUser = account;
+          localStorage.setItem(SESSION_KEY, deviceId); // Cập nhật session cho thiết bị hiện tại
           loginContainer.style.display = 'none';
           mainContainer.style.display = 'block';
           document.getElementById('manage-button').style.display = account.isAdmin ? 'inline-block' : 'none';
@@ -366,6 +379,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       } else {
         localStorage.removeItem('currentUser');
+        localStorage.removeItem(SESSION_KEY);
         loginContainer.style.display = 'block';
         mainContainer.style.display = 'none';
       }
@@ -373,6 +387,13 @@ document.addEventListener('DOMContentLoaded', () => {
       loginContainer.style.display = 'block';
       mainContainer.style.display = 'none';
     }
+  }
+
+  function generateDeviceId() {
+    // Tạo ID duy nhất dựa trên userAgent và timestamp
+    const userAgent = navigator.userAgent;
+    const timestamp = Date.now();
+    return `${userAgent}-${timestamp}`;
   }
 
   function updateKeyTimer(expiry) {
@@ -389,6 +410,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('main-container').style.display = 'none';
         showNotification(translations[currentLang].keyExpired, 'error');
         localStorage.removeItem('currentUser');
+        localStorage.removeItem(SESSION_KEY);
         clearInterval(timerInterval);
         return;
       }
@@ -446,8 +468,11 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
+    // Reset session nếu đăng nhập lại
+    localStorage.removeItem(SESSION_KEY);
     currentUser = userAccount;
     localStorage.setItem('currentUser', JSON.stringify({ username, password }));
+    localStorage.setItem(SESSION_KEY, generateDeviceId()); // Gán session mới cho thiết bị
     document.getElementById('login-container').style.display = 'none';
     document.getElementById('main-container').style.display = 'block';
     document.getElementById('manage-button').style.display = userAccount.isAdmin ? 'inline-block' : 'none';
