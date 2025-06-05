@@ -20,7 +20,7 @@ const initialAccounts = [
     username: "user2",
     password: "password2",
     isAdmin: false,
-    locked: false, // Thay đổi từ true sang false
+    locked: true, // Thay đổi từ true sang false
     expiry: Date.now() + 48 * 60 * 60 * 1000 // Hết hạn sau 48 giờ
   },
   {
