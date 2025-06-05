@@ -328,7 +328,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const user = JSON.parse(localStorage.getItem('currentUser') || '{}');
     const loginContainer = document.getElementById('login-container');
     const mainContainer = document.getElementById('main-container');
-    if (!loginContainer || !mainContainer) {
+    const keyTimerElement = document.getElementById('key-timer-user');
+    if (!loginContainer || !mainContainer || !keyTimerElement) {
       showNotification(translations[currentLang].resourceError, 'error');
       return;
     }
@@ -349,57 +350,40 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.removeItem('currentUser');
         loginContainer.style.display = 'block';
         mainContainer.style.display = 'none';
+        keyTimerElement.textContent = '';
       } else if (account.locked || (!account.isAdmin && account.expiry && Date.now() >= account.expiry)) {
         localStorage.removeItem('currentUser');
         showNotification(translations[currentLang].keyExpired, 'error');
         loginContainer.style.display = 'block';
         mainContainer.style.display = 'none';
+        keyTimerElement.textContent = translations[currentLang].keyExpired;
       } else {
         currentUser = account;
         loginContainer.style.display = 'none';
         mainContainer.style.display = 'block';
         document.getElementById('manage-button').style.display = account.isAdmin ? 'inline-block' : 'none';
-        if (!account.isAdmin) {
-          document.getElementById('key-timer-user').style.display = 'block';
-          window.updateKeyTimer(account.expiry, document.getElementById('key-timer-user'));
+        if (!account.isAdmin && account.expiry) {
+          keyTimerElement.style.display = 'block';
+          const timeLeft = account.expiry - Date.now();
+          if (timeLeft > 0) {
+            const hoursLeft = Math.floor(timeLeft / (1000 * 60 * 60));
+            const minutesLeft = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+            const secondsLeft = Math.floor((timeLeft % (1000 * 60)) / 1000);
+            keyTimerElement.textContent = translations[currentLang].keyTimer.replace('{time}', `${hoursLeft}h ${minutesLeft}m ${secondsLeft}s`);
+          } else {
+            keyTimerElement.textContent = translations[currentLang].keyExpired;
+          }
         } else {
-          document.getElementById('key-timer-user').style.display = 'none';
+          keyTimerElement.style.display = 'none';
+          keyTimerElement.textContent = '';
         }
       }
     } else {
       loginContainer.style.display = 'block';
       mainContainer.style.display = 'none';
+      keyTimerElement.textContent = '';
     }
   }
-
-  // Định nghĩa updateKeyTimer là hàm toàn cục
-  window.updateKeyTimer = function(expiry, timerElement) {
-    if (!timerElement) {
-      showNotification(translations[currentLang].resourceError, 'error');
-      return;
-    }
-
-    const timerUpdate = () => {
-      const now = Date.now();
-      if (now >= expiry) {
-        document.getElementById('login-container').style.display = 'block';
-        document.getElementById('main-container').style.display = 'none';
-        showNotification(translations[currentLang].keyExpired, 'error');
-        localStorage.removeItem('currentUser');
-        clearInterval(timerInterval);
-        return;
-      }
-
-      const timeLeft = expiry - now;
-      const hoursLeft = Math.floor(timeLeft / (1000 * 60 * 60));
-      const minutesLeft = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
-      const secondsLeft = Math.floor((timeLeft % (1000 * 60)) / 1000);
-      timerElement.textContent = translations[currentLang].keyTimer.replace('{time}', `${hoursLeft}h ${minutesLeft}m ${secondsLeft}s`);
-    };
-
-    timerUpdate();
-    const timerInterval = setInterval(timerUpdate, 1000);
-  };
 
   function handleLogin() {
     console.log('login attempt');
@@ -448,13 +432,25 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('login-container').style.display = 'none';
     document.getElementById('main-container').style.display = 'block';
     document.getElementById('manage-button').style.display = userAccount.isAdmin ? 'inline-block' : 'none';
-    document.getElementById('key-timer-user').style.display = userAccount.isAdmin ? 'none' : 'block';
+    const keyTimerElement = document.getElementById('key-timer-user');
+    if (!userAccount.isAdmin && userAccount.expiry) {
+      keyTimerElement.style.display = 'block';
+      const timeLeft = userAccount.expiry - Date.now();
+      if (timeLeft > 0) {
+        const hoursLeft = Math.floor(timeLeft / (1000 * 60 * 60));
+        const minutesLeft = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+        const secondsLeft = Math.floor((timeLeft % (1000 * 60)) / 1000);
+        keyTimerElement.textContent = translations[currentLang].keyTimer.replace('{time}', `${hoursLeft}h ${minutesLeft}m ${secondsLeft}s`);
+      } else {
+        keyTimerElement.textContent = translations[currentLang].keyExpired;
+      }
+    } else {
+      keyTimerElement.style.display = 'none';
+      keyTimerElement.textContent = '';
+    }
     showNotification(translations[currentLang].loginSuccess, 'success');
     usernameInput.value = '';
     passwordInput.value = '';
-    if (!userAccount.isAdmin) {
-      window.updateKeyTimer(userAccount.expiry, document.getElementById('key-timer-user'));
-    }
   }
 
   function attachButtonEvents() {
