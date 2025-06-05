@@ -20,14 +20,14 @@ const initialAccounts = [
     username: "user2",
     password: "password2",
     isAdmin: false,
-    locked: true, // Đã đặt thành true
+    locked: true, // Đã chỉnh từ false sang true
     expiry: Date.now() + 48 * 60 * 60 * 1000 // Hết hạn sau 48 giờ
   },
   {
     username: "user3",
     password: "password3",
     isAdmin: false,
-    locked: false,
+    locked: true,
     expiry: Date.now() + 2 * 60 * 60 * 1000 // Hết hạn sau 2 giờ
   }
 ];
@@ -35,16 +35,16 @@ const initialAccounts = [
 // Đồng bộ trạng thái locked từ initialAccounts
 function syncLockedStates() {
   let storedAccounts = JSON.parse(localStorage.getItem(ACCOUNTS_STORAGE_KEY)) || [];
-  let updatedAccounts = [];
+  let updatedAccounts = storedAccounts.slice();
 
   initialAccounts.forEach(initialAcc => {
-    const storedAcc = storedAccounts.find(acc => acc.username === initialAcc.username);
-    if (storedAcc) {
-      updatedAccounts.push({
-        ...storedAcc,
-        locked: initialAcc.locked, // Luôn lấy locked từ initialAccounts
-        isAdmin: initialAcc.isAdmin // Cập nhật các thuộc tính cố định từ initialAccounts
-      });
+    const storedAccIndex = updatedAccounts.findIndex(acc => acc.username === initialAcc.username);
+    if (storedAccIndex !== -1) {
+      updatedAccounts[storedAccIndex] = {
+        ...updatedAccounts[storedAccIndex],
+        locked: initialAcc.locked,
+        expiry: updatedAccounts[storedAccIndex].expiry
+      };
     } else {
       updatedAccounts.push({ ...initialAcc });
     }
@@ -53,19 +53,8 @@ function syncLockedStates() {
   localStorage.setItem(ACCOUNTS_STORAGE_KEY, JSON.stringify(updatedAccounts));
 }
 
-// Reset hoàn toàn localStorage và đồng bộ lại từ initialAccounts
-function resetAccounts() {
-  localStorage.removeItem(ACCOUNTS_STORAGE_KEY);
-  syncLockedStates();
-}
-
 export function getAccounts() {
-  const accounts = JSON.parse(localStorage.getItem(ACCOUNTS_STORAGE_KEY));
-  if (!accounts || accounts.length === 0) {
-    syncLockedStates();
-    return JSON.parse(localStorage.getItem(ACCOUNTS_STORAGE_KEY)) || initialAccounts;
-  }
-  return accounts;
+  return JSON.parse(localStorage.getItem(ACCOUNTS_STORAGE_KEY)) || initialAccounts;
 }
 
 export function updateAccount(username, updates) {
@@ -83,4 +72,4 @@ export function addAccount(account) {
   localStorage.setItem(ACCOUNTS_STORAGE_KEY, JSON.stringify(accounts));
 }
 
-export { syncLockedStates, resetAccounts };
+export { syncLockedStates };
