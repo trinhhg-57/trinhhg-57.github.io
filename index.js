@@ -59,6 +59,7 @@ document.addEventListener('DOMContentLoaded', () => {
       loginTitle: 'Đăng Nhập',
       usernamePlaceholder: 'Nhập tên đăng nhập',
       passwordPlaceholder: 'Nhập mật khẩu',
+      loginButton: 'Đăng Nhập',
       keyTimer: 'Thời gian còn lại: {time}',
       keyExpired: 'Tài khoản đã hết hạn hoặc bị khóa!',
       invalidCredentials: 'Tên đăng nhập hoặc mật khẩu không đúng!',
@@ -71,6 +72,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let currentMode = 'default';
   let currentUser = null;
   const LOCAL_STORAGE_KEY = 'local_settings';
+  const ACCOUNTS_STORAGE_KEY = 'accounts';
 
   function escapeHtml(str) {
     try {
@@ -198,7 +200,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function updateButtonStates() {
     const matchCaseButton = document.getElementById('match-case');
     if (matchCaseButton) {
-      matchCaseButton.textContent = matchCaseEnabled ? translations[currentLang].matchCaseOn : translations[currentLang].matchCaseOff;
+      matchCaseButton.textContent = matchCaseEnabled ? translations[currentLang].matchCaseOn : translations[lang].matchCaseOff;
       matchCaseButton.style.background = matchCaseEnabled ? '#28a745' : '#6c757d';
     }
   }
@@ -295,8 +297,9 @@ document.addEventListener('DOMContentLoaded', () => {
   function checkLoginStatus() {
     const user = JSON.parse(localStorage.getItem('currentUser'));
     if (user) {
-      const account = getAccounts().find(acc => acc.username === user.username && acc.password === user.password && !acc.locked);
-      if (account && (account.isAdmin || (account.expiry && Date.now() < account.expiry))) {
+      const accounts = JSON.parse(localStorage.getItem(ACCOUNTS_STORAGE_KEY)) || getAccounts();
+      const account = accounts.find(acc => acc.username === user.username && acc.password === user.password);
+      if (account && !account.locked && (account.isAdmin || (account.expiry && Date.now() < account.expiry))) {
         currentUser = account;
         document.getElementById('login-container').style.display = 'none';
         document.getElementById('main-container').style.display = 'block';
@@ -312,6 +315,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('main-container').style.display = 'none';
         if (user) {
           showNotification(translations[currentLang].keyExpired, 'error');
+          localStorage.removeItem('currentUser');
         }
       }
     } else {
@@ -330,6 +334,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('login-container').style.display = 'block';
         document.getElementById('main-container').style.display = 'none';
         showNotification(translations[currentLang].keyExpired, 'error');
+        localStorage.removeItem('currentUser');
         clearInterval(timerInterval);
         return;
       }
@@ -697,7 +702,8 @@ document.addEventListener('DOMContentLoaded', () => {
           return;
         }
 
-        const account = getAccounts().find(acc => acc.username === username && acc.password === password && !acc.locked);
+        const accounts = JSON.parse(localStorage.getItem(ACCOUNTS_STORAGE_KEY)) || getAccounts();
+        const account = accounts.find(acc => acc.username === username && acc.password === password && !acc.locked);
         if (account) {
           if (account.isAdmin || (account.expiry && Date.now() < account.expiry)) {
             currentUser = account;
@@ -765,6 +771,13 @@ document.addEventListener('DOMContentLoaded', () => {
   function escapeRegExp(string) {
     return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   }
+
+  // Lắng nghe sự kiện storage để phát hiện tài khoản bị khóa
+  window.addEventListener('storage', (event) => {
+    if (event.key === ACCOUNTS_STORAGE_KEY) {
+      checkLoginStatus();
+    }
+  });
 
   try {
     updateLanguage('vn');
