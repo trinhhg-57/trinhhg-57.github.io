@@ -180,7 +180,6 @@ h2 {
   pointer-events: auto;
   z-index: 10;
   touch-action: manipulation;
-  flex: 0 0 24%; /* Ngắn bằng 1/4 chiều rộng */
 }
 
 .match-case-button:hover, .rename-mode-button:hover, .delete-mode-button:hover, #add-mode:hover, #copy-mode:hover, #export-settings:hover, #import-settings:hover, #manage-button:hover {
@@ -219,7 +218,6 @@ h2 {
   z-index: 10;
   transition: background 0.2s;
   touch-action: manipulation;
-  flex: 1; /* Chia đều không gian */
 }
 
 #add-pair:hover, #save-settings:hover {
@@ -238,7 +236,7 @@ h2 {
   flex: 1;
   padding: 6px;
   font-size: 14px;
-  min-width: 0; /* Đảm bảo co giãn */
+  min-width: 0;
 }
 
 .punctuation-item button {
@@ -249,7 +247,7 @@ h2 {
   cursor: pointer;
   pointer-events: auto;
   touch-action: manipulation;
-  min-width: 60px; /* Đảm bảo nút không quá nhỏ */
+  min-width: 60px;
 }
 
 #replace-button, #copy-button, #split-button, #copy-button1, #copy-button2 {
@@ -410,26 +408,34 @@ textarea {
   }
 
   .mode-controls {
-    flex-direction: row;
-    align-items: center;
-    flex-wrap: wrap;
+    flex-direction: column;
+    align-items: stretch;
     gap: 5px;
   }
 
-  .mode-controls button {
-    flex: 0 0 24%; /* Ngắn bằng 1/4 chiều rộng */
+  #mode-select {
+    width: 100%;
     margin-bottom: 5px;
+  }
+
+  .mode-controls button {
+    flex: 0 0 22%; /* Ngắn bằng ~1/4 chiều rộng, trừ đi khoảng cách gap */
+    margin-bottom: 5px;
+    font-size: 11px;
+    padding: 5px 2px;
   }
 
   .action-buttons {
     flex-direction: row;
     gap: 5px;
     margin-bottom: 12px;
+    margin-top: 10px;
   }
 
   #add-pair, #save-settings {
     flex: 1; /* Chia đều không gian */
     margin-bottom: 5px;
+    font-size: 12px;
   }
 
   .punctuation-item {
@@ -441,12 +447,14 @@ textarea {
   .punctuation-item input {
     flex: 1;
     min-width: 0;
-    padding: 6px;
+    padding: 5px;
+    font-size: 12px;
   }
 
   .punctuation-item button {
-    min-width: 60px;
-    padding: 6px 10px;
+    min-width: 50px;
+    padding: 5px 8px;
+    font-size: 12px;
   }
 
   .replace-container, .split-container {
