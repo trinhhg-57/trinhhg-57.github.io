@@ -1,6 +1,5 @@
 // manage.js
 import { getAccounts, updateAccount } from './account.js';
-import { updateKeyTimer } from './index.js'; // Import hàm updateKeyTimer từ index.js
 
 document.addEventListener('DOMContentLoaded', () => {
   console.log('Manage DOM fully loaded');
@@ -54,7 +53,6 @@ document.addEventListener('DOMContentLoaded', () => {
       const expiryCell = document.createElement('td');
       const actionCell = document.createElement('td');
 
-      // Hiển thị username và password trong cùng một cột
       const usernameDiv = document.createElement('div');
       usernameDiv.textContent = `Tên: ${account.username}`;
       const passwordDiv = document.createElement('div');
@@ -64,7 +62,6 @@ document.addEventListener('DOMContentLoaded', () => {
       accountCell.style.border = '1px solid #ccc';
       accountCell.style.padding = '8px';
 
-      // Hiển thị thời gian còn lại
       if (account.isAdmin) {
         expiryCell.textContent = translations[currentLang].adminAccount;
       } else if (account.locked) {
@@ -74,14 +71,13 @@ document.addEventListener('DOMContentLoaded', () => {
         keyTimerSpan.className = 'key-timer';
         keyTimerSpan.dataset.username = account.username;
         expiryCell.appendChild(keyTimerSpan);
-        updateKeyTimer(account.expiry, keyTimerSpan); // Sử dụng updateKeyTimer để đồng bộ thời gian
+        window.updateKeyTimer(account.expiry, keyTimerSpan);
       } else {
         expiryCell.textContent = 'Không có thời hạn';
       }
       expiryCell.style.border = '1px solid #ccc';
       expiryCell.style.padding = '8px';
 
-      // Thêm hai nút Khóa và Kích hoạt
       const actionButtons = document.createElement('div');
       actionButtons.className = 'action-buttons';
 
@@ -143,7 +139,6 @@ document.addEventListener('DOMContentLoaded', () => {
   try {
     updateLanguage('vn');
     updateAccountList();
-    // Không cần setInterval vì updateKeyTimer đã tự động cập nhật mỗi giây
   } catch (error) {
     console.error('Error in manage.js:', error);
     showNotification('Có lỗi khi khởi tạo trang quản lý!', 'error');
