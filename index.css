@@ -1,19 +1,22 @@
 * {
   font-family: Arial, sans-serif !important;
+  box-sizing: border-box;
 }
 
 body {
   margin: 0;
-  padding: 20px;
+  padding: 10px;
   background: #f4f4f4;
   position: relative;
+  min-height: 100vh;
 }
 
 .container {
-  max-width: 800px;
+  max-width: 90vw;
+  width: 100%;
   margin: 0 auto;
   background: white;
-  padding: 20px;
+  padding: 15px;
   border-radius: 8px;
   box-shadow: 0 0 10px rgba(0,0,0,0.1);
   position: relative;
@@ -25,7 +28,7 @@ body {
 }
 
 .form-group {
-  margin-bottom: 15px;
+  margin-bottom: 12px;
 }
 
 .form-group label {
@@ -41,7 +44,6 @@ body {
   font-size: 14px;
   border: 1px solid #ccc;
   border-radius: 3px;
-  box-sizing: border-box;
 }
 
 #login-button {
@@ -53,6 +55,7 @@ body {
   font-size: 14px;
   border-radius: 3px;
   transition: background 0.2s;
+  touch-action: manipulation;
 }
 
 #login-button:hover {
@@ -63,18 +66,18 @@ body {
   color: #333;
   font-size: 14px;
   text-align: center;
-  margin-top: 10px;
-  margin-bottom: 10px;
+  margin: 10px 0;
 }
 
 h1 {
   text-align: center;
   color: #333;
+  font-size: 1.5rem;
 }
 
 .contact-info {
   text-align: left;
-  margin-bottom: 20px;
+  margin-bottom: 15px;
   font-size: 14px;
 }
 
@@ -93,21 +96,23 @@ h1 {
 
 .tabs {
   display: flex;
-  margin-bottom: 20px;
+  flex-wrap: wrap;
+  margin-bottom: 15px;
   z-index: 10;
 }
 
 .tab-button {
   flex: 1;
-  padding: 12px;
+  padding: 10px;
   border: none;
   background: #e0e0e0;
   cursor: pointer;
-  font-size: 16px;
+  font-size: 14px;
   outline: none;
   pointer-events: auto;
   z-index: 10;
   transition: background 0.2s;
+  touch-action: manipulation;
 }
 
 .tab-button.active {
@@ -129,21 +134,22 @@ h1 {
 }
 
 h2 {
-  font-size: 20px;
-  margin-bottom: 15px;
+  font-size: 18px;
+  margin-bottom: 12px;
 }
 
 .mode-controls {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-bottom: 15px;
+  gap: 8px;
+  margin-bottom: 12px;
   flex-wrap: wrap;
 }
 
 #mode-select {
   padding: 8px;
   font-size: 14px;
+  max-width: 100%;
 }
 
 .match-case-button, .rename-mode-button, .delete-mode-button, #add-mode, #copy-mode, #export-settings, #import-settings, #manage-button {
@@ -156,6 +162,7 @@ h2 {
   border-radius: 3px;
   pointer-events: auto;
   z-index: 10;
+  touch-action: manipulation;
 }
 
 .match-case-button:hover, .rename-mode-button:hover, .delete-mode-button:hover, #add-mode:hover, #copy-mode:hover, #export-settings:hover, #import-settings:hover, #manage-button:hover {
@@ -176,9 +183,10 @@ h2 {
 
 .action-buttons {
   display: flex;
-  gap: 10px;
-  margin-bottom: 15px;
+  gap: 8px;
+  margin-bottom: 12px;
   justify-content: flex-start;
+  flex-wrap: wrap;
 }
 
 #add-pair, #save-settings {
@@ -192,6 +200,7 @@ h2 {
   pointer-events: auto;
   z-index: 10;
   transition: background 0.2s;
+  touch-action: manipulation;
 }
 
 #add-pair:hover, #save-settings:hover {
@@ -200,14 +209,16 @@ h2 {
 
 .punctuation-item {
   display: flex;
-  gap: 10px;
-  margin-bottom: 15px;
+  gap: 8px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
 }
 
 .punctuation-item input {
   flex: 1;
   padding: 8px;
   font-size: 14px;
+  min-width: 100px;
 }
 
 .punctuation-item button {
@@ -217,6 +228,7 @@ h2 {
   border: none;
   cursor: pointer;
   pointer-events: auto;
+  touch-action: manipulation;
 }
 
 #replace-button, #copy-button, #split-button, #copy-button1, #copy-button2 {
@@ -232,6 +244,7 @@ h2 {
   pointer-events: auto;
   z-index: 10;
   transition: background 0.2s;
+  touch-action: manipulation;
 }
 
 #replace-button:hover, #copy-button:hover, #split-button:hover, #copy-button1:hover, #copy-button2:hover {
@@ -240,12 +253,11 @@ h2 {
 
 textarea {
   width: 100%;
-  height: 150px;
-  margin-bottom: 15px;
+  height: 120px;
+  margin-bottom: 12px;
   padding: 10px;
   font-size: 14px;
   resize: vertical;
-  box-sizing: border-box;
 }
 
 #output-text, #output1-text, #output2-text {
@@ -254,19 +266,20 @@ textarea {
 
 .replace-container {
   display: flex;
-  gap: 20px;
+  gap: 15px;
+  flex-wrap: wrap;
 }
 
 .split-container {
   display: flex;
   gap: 10px;
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
   align-items: stretch;
 }
 
 .input-section, .output-section {
   flex: 1;
-  min-width: 0;
+  min-width: 100%;
 }
 
 #split-input-text, #output1-text, #output2-text {
@@ -276,13 +289,12 @@ textarea {
   padding: 8px;
   font-size: 12px;
   resize: vertical;
-  box-sizing: border-box;
 }
 
 #notification-container {
   position: fixed;
-  top: 20px;
-  right: 20px;
+  top: 10px;
+  right: 10px;
   z-index: 1000;
   display: flex;
   flex-direction: column;
@@ -337,6 +349,7 @@ textarea {
   font-size: 12px;
   border-radius: 3px;
   pointer-events: auto;
+  touch-action: manipulation;
 }
 
 #pagination-controls button:disabled {
@@ -346,4 +359,79 @@ textarea {
 
 #pagination-controls span {
   font-size: 14px;
+}
+
+/* Media Queries cho Mobile */
+@media (max-width: 768px) {
+  .container {
+    padding: 10px;
+    max-width: 100%;
+  }
+
+  h1 {
+    font-size: 1.2rem;
+  }
+
+  h2 {
+    font-size: 16px;
+  }
+
+  .tabs {
+    flex-direction: column;
+  }
+
+  .tab-button {
+    width: 100%;
+    margin-bottom: 5px;
+    font-size: 12px;
+  }
+
+  .mode-controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .mode-controls button, #mode-select {
+    width: 100%;
+    margin-bottom: 5px;
+  }
+
+  .action-buttons {
+    flex-direction: column;
+  }
+
+  .action-buttons button {
+    width: 100%;
+  }
+
+  .punctuation-item {
+    flex-direction: column;
+  }
+
+  .punctuation-item input, .punctuation-item button {
+    width: 100%;
+  }
+
+  .replace-container, .split-container {
+    flex-direction: column;
+  }
+
+  .input-section, .output-section {
+    min-width: 100%;
+  }
+
+  textarea {
+    height: 100px;
+    font-size: 12px;
+  }
+
+  #notification-container {
+    top: 5px;
+    right: 5px;
+  }
+
+  .notification {
+    font-size: 12px;
+    min-width: 150px;
+  }
 }
