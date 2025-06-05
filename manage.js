@@ -41,6 +41,9 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function updateAccountList() {
+    console.log('Updating account list...');
+    syncLockedStates(); // Đồng bộ trước khi hiển thị danh sách
+
     const accountList = document.getElementById('account-list');
     if (!accountList) return;
 
@@ -48,6 +51,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const accounts = getAccounts();
 
     accounts.forEach(account => {
+      console.log('Account:', account);
       const row = document.createElement('tr');
       const accountCell = document.createElement('td');
       const expiryCell = document.createElement('td');
@@ -97,7 +101,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const handleLock = () => {
         updateAccount(account.username, { locked: true });
-        syncLockedStates(); // Đồng bộ sau khi khóa
+        syncLockedStates();
         localStorage.setItem(ACCOUNTS_STORAGE_KEY, JSON.stringify(getAccounts()));
         const currentUser = JSON.parse(localStorage.getItem('currentUser'));
         if (currentUser && currentUser.username === account.username) {
@@ -111,7 +115,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const handleActivate = () => {
         updateAccount(account.username, { locked: false });
-        syncLockedStates(); // Đồng bộ sau khi kích hoạt
+        syncLockedStates();
         localStorage.setItem(ACCOUNTS_STORAGE_KEY, JSON.stringify(getAccounts()));
         showNotification(translations[currentLang].accountActivated, 'success');
         updateAccountList();
@@ -143,7 +147,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   try {
-    syncLockedStates(); // Đồng bộ trạng thái locked khi tải trang
+    syncLockedStates();
     updateLanguage('vn');
     updateAccountList();
   } catch (error) {
