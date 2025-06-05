@@ -1,123 +1,76 @@
+<!-- index.html -->
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="vn">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Tiện Ích Của Trịnh Hg</title>
-  <link rel="stylesheet" href="index.css">
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <!-- Login Screen -->
-  <div id="login-container" class="container">
+  <div id="login-container">
     <h1 id="app-title">Tiện Ích Của Trịnh Hg</h1>
-    <div class="login-form">
-      <p id="renew-account">
-        Gia hạn tài khoản: 
-        <a href="https://www.facebook.com/share/19eFDC5A4R/" target="_blank">https://www.facebook.com/share/19eFDC5A4R/</a>
-      </p>
-      <div class="form-group">
-        <label for="username">Tên đăng nhập:</label>
-        <input type="text" id="username" name="username" autocomplete="username" placeholder="Nhập tên đăng nhập">
-      </div>
-      <div class="form-group">
-        <label for="password">Mật khẩu:</label>
-        <input type="password" id="password" name="password" autocomplete="current-password" placeholder="Nhập mật khẩu">
-      </div>
+    <div>
+      <input type="text" id="username" placeholder="Nhập tên đăng nhập">
+      <input type="password" id="password" placeholder="Nhập mật khẩu">
       <button id="login-button">Đăng Nhập</button>
     </div>
+    <div id="key-timer-user"></div>
+    <div id="contact-text1">Liên hệ hỗ trợ qua: <a href="https://www.facebook.com/trinhhg.07/">Facebook</a></div>
+    <div id="renew-account">Gia hạn tài khoản: <a href="https://www.facebook.com/trinhhg.07/">Facebook</a></div>
+    <!-- Thêm nút Reset Accounts -->
+    <button id="reset-accounts-button" style="margin-top: 10px;">Reset Accounts</button>
   </div>
-
-  <!-- Main Content -->
-  <div id="main-container" class="container" style="display: none;">
+  <div id="main-container" style="display: none;">
     <h1 id="app-title">Tiện Ích Của Trịnh Hg</h1>
-    <div id="key-timer" style="text-align: center; margin-bottom: 10px; font-size: 14px;"></div>
-    <div class="contact-info">
-      <p id="contact-text1">
-        Liên hệ hỗ trợ qua: 
-        <a href="https://www.facebook.com/share/19eFDC5A4R/" target="_blank">https://www.facebook.com/share/19eFDC5A4R/</a>
-      </p>
-      <div id="key-timer-user" style="text-align: center; margin-top: 10px; font-size: 14px;"></div>
-    </div>
+    <div id="key-timer-user"></div>
     <div class="tabs">
-      <button class="tab-button active" data-tab="settings" id="settings-tab">Settings</button>
-      <button class="tab-button" data-tab="replace" id="replace-tab">Replace</button>
-      <button class="tab-button" data-tab="split" id="split-tab">Chia Chương</button>
+      <button class="tab-button active" id="settings-tab" data-tab="settings">Settings</button>
+      <button class="tab-button" id="replace-tab" data-tab="replace">Replace</button>
+      <button class="tab-button" id="split-tab" data-tab="split">Chia Chương</button>
+      <button id="manage-button" style="display: none;">Quản lý</button>
     </div>
-
-    <!-- Tab Settings -->
     <div id="settings" class="tab-content active">
       <h2 id="settings-title">Cài đặt tìm kiếm và thay thế</h2>
-      <div class="mode-controls">
-        <label for="mode-select" id="mode-label">Chọn chế độ:</label>
-        <select id="mode-select">
-          <option value="default">Mặc định</option>
-        </select>
-        <!-- Hàng 1: Thêm chế độ, Sao Chép Chế Độ, Match Case -->
-        <div class="mode-button-row-1">
-          <button id="add-mode">Thêm chế độ mới</button>
-          <button id="copy-mode">Sao Chép Chế Độ</button>
-          <button id="match-case" class="match-case-button">Match Case: Tắt</button>
-        </div>
-        <!-- Hàng 2: Xuất Cài Đặt, Nhập Cài Đặt -->
-        <div class="mode-button-row-2">
-          <button id="export-settings">Xuất Cài Đặt</button>
-          <button id="import-settings">Nhập Cài Đặt</button>
-        </div>
-        <button id="rename-mode" class="rename-mode-button" style="display: none;">Đổi Tên</button>
-        <button id="delete-mode" class="delete-mode-button" style="display: none;">Xóa Chế Độ</button>
-        <button id="manage-button" style="display: none;">Quản lý</button>
+      <div>
+        <label id="mode-label">Chọn chế độ:</label>
+        <select id="mode-select"></select>
+        <button id="add-mode">Thêm chế độ mới</button>
+        <button id="copy-mode">Sao Chép Chế Độ</button>
+        <button id="rename-mode" style="display: none;">Đổi tên</button>
+        <button id="delete-mode" style="display: none;">Xóa chế độ</button>
       </div>
-      <div class="action-buttons">
-        <button id="add-pair">Thêm</button>
-        <button id="save-settings">Lưu cài đặt</button>
+      <div>
+        <button id="match-case">Match Case: Tắt</button>
       </div>
-      <div id="punctuation-list">
-        <div class="punctuation-item">
-          <input type="text" class="find" placeholder="Tìm ví dụ dấu phẩy">
-          <input type="text" class="replace" placeholder="Thay thế ví dụ dấu chấm phẩy">
-          <button class="remove">Xóa</button>
-        </div>
-      </div>
-      <div id="pagination-controls" style="text-align: center; margin-top: 10px;"></div>
+      <div id="punctuation-list"></div>
+      <button id="add-pair">Thêm</button>
+      <button id="save-settings">Lưu cài đặt</button>
+      <button id="export-settings">Xuất Cài Đặt</button>
+      <button id="import-settings">Nhập Cài Đặt</button>
     </div>
-
-    <!-- Tab Replace -->
     <div id="replace" class="tab-content">
       <h2 id="replace-title">Thay thế Dấu câu</h2>
-      <div class="replace-container">
-        <div class="input-section">
-          <textarea id="input-text" placeholder="Dán văn bản của bạn vào đây..."></textarea>
-          <button id="replace-button">Thay thế</button>
-        </div>
-        <div class="output-section">
-          <textarea id="output-text" readonly placeholder="Kết quả sẽ xuất hiện ở đây..."></textarea>
-          <button id="copy-button">Sao chép</button>
-        </div>
-      </div>
+      <textarea id="input-text" placeholder="Dán văn bản của bạn vào đây..."></textarea>
+      <button id="replace-button">Thay thế</button>
+      <textarea id="output-text" placeholder="Kết quả sẽ xuất hiện ở đây..."></textarea>
+      <button id="copy-button">Sao chép</button>
     </div>
-
-    <!-- Tab Chia Chương -->
     <div id="split" class="tab-content">
       <h2 id="split-title">Chia Chương</h2>
-      <div class="split-container">
-        <div class="input-section">
-          <textarea id="split-input-text" placeholder="Dán văn bản của bạn vào đây..."></textarea>
-          <button id="split-button">Chia Chương</button>
-        </div>
-        <div class="output-section">
-          <textarea id="output1-text" readonly placeholder="Kết quả chương 1 sẽ xuất hiện ở đây..."></textarea>
-          <button id="copy-button1">Sao chép 1</button>
-        </div>
-        <div class="output-section">
-          <textarea id="output2-text" readonly placeholder="Kết quả chương 2 sẽ xuất hiện ở đây..."></textarea>
-          <button id="copy-button2">Sao chép 2</button>
-        </div>
-      </div>
+      <textarea id="split-input-text" placeholder="Dán văn bản của bạn vào đây..."></textarea>
+      <button id="split-button">Chia Chương</button>
+      <textarea id="output1-text" placeholder="Kết quả chương 1 sẽ xuất hiện ở đây..."></textarea>
+      <button id="copy-button1">Sao chép 1</button>
+      <textarea id="output2-text" placeholder="Kết quả chương 2 sẽ xuất hiện ở đây..."></textarea>
+      <button id="copy-button2">Sao chép 2</button>
     </div>
+    <div id="contact-text1">Liên hệ hỗ trợ qua: <a href="https://www.facebook.com/trinhhg.07/">Facebook</a></div>
+    <div id="renew-account">Gia hạn tài khoản: <a href="https://www.facebook.com/trinhhg.07/">Facebook</a></div>
+    <!-- Thêm nút Reset Accounts -->
+    <button id="reset-accounts-button" style="margin-top: 10px;">Reset Accounts</button>
   </div>
-
   <div id="notification-container"></div>
-
   <script type="module" src="index.js"></script>
 </body>
 </html>
