@@ -361,7 +361,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('manage-button').style.display = account.isAdmin ? 'inline-block' : 'none';
         if (!account.isAdmin) {
           document.getElementById('key-timer-user').style.display = 'block';
-          updateKeyTimer(account.expiry);
+          updateKeyTimer(account.expiry, document.getElementById('key-timer-user'));
         } else {
           document.getElementById('key-timer-user').style.display = 'none';
         }
@@ -372,8 +372,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  function updateKeyTimer(expiry) {
-    const timerElement = document.getElementById('key-timer-user');
+  export function updateKeyTimer(expiry, timerElement) {
     if (!timerElement) {
       showNotification(translations[currentLang].resourceError, 'error');
       return;
@@ -453,7 +452,7 @@ document.addEventListener('DOMContentLoaded', () => {
     usernameInput.value = '';
     passwordInput.value = '';
     if (!userAccount.isAdmin) {
-      updateKeyTimer(userAccount.expiry);
+      updateKeyTimer(userAccount.expiry, document.getElementById('key-timer-user'));
     }
   }
 
