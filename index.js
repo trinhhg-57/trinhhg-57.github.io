@@ -79,11 +79,11 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       if (typeof str !== 'string') return '';
       return str.replace(/[&<>"']/g, match => ({
-        '&': '&',
-        '<': '<',
-        '>': '>',
-        '"': '"',
-        "'": ''' // Sửa lỗi cú pháp, dùng thực thể HTML
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&apos;' // Sửa lỗi cú pháp, dùng thực thể HTML và đảm bảo cú pháp đúng
       }[match] || match));
     } catch (error) {
       console.error('Error in escapeHtml:', error);
@@ -214,7 +214,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const notification = document.createElement('div');
-    notification.className = `notification ${level}`; // Sửa lỗi cú pháp, dùng backtick
+    notification.className = `notification ${level}`;
     notification.textContent = message;
     container.appendChild(notification);
 
