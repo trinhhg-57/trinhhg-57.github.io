@@ -13,7 +13,7 @@ const initialAccounts = [
     username: "user1",
     password: "password1",
     isAdmin: false,
-    locked: true,
+    locked: false,
     expiry: Date.now() + 24 * 60 * 60 * 1000 // Hết hạn sau 24 giờ
   },
   {
@@ -42,8 +42,8 @@ function syncLockedStates() {
     if (storedAcc) {
       updatedAccounts.push({
         ...storedAcc,
-        locked: initialAcc.locked, // Luôn lấy locked từ initialAccounts
-        isAdmin: initialAcc.isAdmin // Cập nhật các thuộc tính cố định từ initialAccounts
+        locked: initialAcc.locked,
+        isAdmin: initialAcc.isAdmin
       });
     } else {
       updatedAccounts.push({ ...initialAcc });
@@ -83,4 +83,4 @@ export function addAccount(account) {
   localStorage.setItem(ACCOUNTS_STORAGE_KEY, JSON.stringify(accounts));
 }
 
-export { syncLockedStates, resetAccounts };
+export { syncLockedStates, resetAccounts }; // Đảm bảo export đúng
