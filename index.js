@@ -1,5 +1,5 @@
 // index.js
-import { getAccounts, updateAccount, syncLockedStates, resetAccounts } from './account.js';
+import { getAccounts, updateAccount, syncLockedStates } from './account.js';
 
 document.addEventListener('DOMContentLoaded', () => {
   console.log('DOM fully loaded');
@@ -25,7 +25,6 @@ document.addEventListener('DOMContentLoaded', () => {
       addPair: 'Thêm',
       saveSettings: 'Lưu cài đặt',
       manageButton: 'Quản lý',
-      resetAccountsButton: 'Reset Accounts', // Thêm nút Reset
       replaceTitle: 'Thay thế Dấu câu',
       inputText: 'Dán văn bản của bạn vào đây...',
       replaceButton: 'Thay thế',
@@ -67,8 +66,7 @@ document.addEventListener('DOMContentLoaded', () => {
       invalidCredentials: 'Tên đăng nhập hoặc mật khẩu không đúng!',
       loginSuccess: 'Đăng nhập thành công!',
       emptyCredentials: 'Vui lòng nhập đầy đủ tên đăng nhập và mật khẩu!',
-      resourceError: 'Không thể tải tài nguyên, vui lòng làm mới trang hoặc kiểm tra kết nối!',
-      accountsReset: 'Đã reset danh sách tài khoản!'
+      resourceError: 'Không thể tải tài nguyên, vui lòng làm mới trang hoặc kiểm tra kết nối!'
     }
   };
 
@@ -116,7 +114,6 @@ document.addEventListener('DOMContentLoaded', () => {
       addPair: document.getElementById('add-pair'),
       saveSettings: document.getElementById('save-settings'),
       manageButton: document.getElementById('manage-button'),
-      resetAccountsButton: document.getElementById('reset-accounts-button'), // Thêm nút Reset
       replaceTitle: document.getElementById('replace-title'),
       inputText: document.getElementById('input-text'),
       replaceButton: document.getElementById('replace-button'),
@@ -161,7 +158,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (elements.addPair) elements.addPair.textContent = translations[lang].addPair;
     if (elements.saveSettings) elements.saveSettings.textContent = translations[lang].saveSettings;
     if (elements.manageButton) elements.manageButton.textContent = translations[lang].manageButton;
-    if (elements.resetAccountsButton) elements.resetAccountsButton.textContent = translations[lang].resetAccountsButton; // Thêm nút Reset
     if (elements.replaceTitle) elements.replaceTitle.textContent = translations[lang].replaceTitle;
     if (elements.inputText) elements.inputText.placeholder = translations[lang].inputText;
     if (elements.replaceButton) elements.replaceButton.textContent = translations[lang].replaceButton;
@@ -330,6 +326,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function checkLoginStatus() {
     console.log('Checking login status...');
+    // Đồng bộ trạng thái locked trước khi kiểm tra
+    syncLockedStates();
+
     const user = JSON.parse(localStorage.getItem('currentUser') || '{}');
     const loginContainer = document.getElementById('login-container');
     const mainContainer = document.getElementById('main-container');
@@ -402,6 +401,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function handleLogin() {
     console.log('login attempt');
+    // Đồng bộ trước khi đăng nhập
+    syncLockedStates();
+
     const usernameInput = document.getElementById('username');
     const passwordInput = document.getElementById('password');
     if (!usernameInput || !passwordInput) {
@@ -487,7 +489,6 @@ document.addEventListener('DOMContentLoaded', () => {
       addPairButton: document.getElementById('add-pair'),
       saveSettingsButton: document.getElementById('save-settings'),
       manageButton: document.getElementById('manage-button'),
-      resetAccountsButton: document.getElementById('reset-accounts-button'), // Thêm nút Reset
       replaceButton: document.getElementById('replace-button'),
       copyButton: document.getElementById('copy-button'),
       splitButton: document.getElementById('split-button'),
@@ -609,14 +610,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (buttons.manageButton) {
       addMobileEvent(buttons.manageButton, () => window.open('manage.html', '_blank'));
-    }
-
-    if (buttons.resetAccountsButton) {
-      addMobileEvent(buttons.resetAccountsButton, () => {
-        resetAccounts();
-        checkLoginStatus();
-        showNotification(translations[currentLang].accountsReset, 'success');
-      });
     }
 
     if (buttons.replaceButton) {
@@ -884,14 +877,8 @@ document.addEventListener('DOMContentLoaded', () => {
     showNotification(translations[currentLang].resourceError, 'error');
   });
 
-  // Đồng bộ giữa các tab
   window.addEventListener('storage', (event) => {
-    if (event.key === 'accounts') {
-      console.log('Accounts updated in another tab, checking login status...');
-      checkLoginStatus();
-    }
     if (event.key === 'currentUser') {
-      console.log('Current user updated in another tab, checking login status...');
       checkLoginStatus();
     }
   });
@@ -900,6 +887,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   try {
     console.log('Initializing app...');
+    syncLockedStates();
     updateLanguage('vn');
     loadModes();
     attachButtonEvents();
