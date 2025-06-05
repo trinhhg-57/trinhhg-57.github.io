@@ -20,26 +20,47 @@ const initialAccounts = [
     username: "user2",
     password: "password2",
     isAdmin: false,
-    locked: true, // Tài khoản này bị khóa để kiểm tra
+    locked: true,
     expiry: Date.now() + 48 * 60 * 60 * 1000 // Hết hạn sau 48 giờ
+  },
+  {
+    username: "user3",
+    password: "password3",
+    isAdmin: false,
+    locked: true,
+    expiry: Date.now() + 2 * 60 * 60 * 1000 // Hết hạn sau 2 giờ
   }
 ];
 
-// Kiểm tra và đồng bộ localStorage với initialAccounts
+// Đồng bộ initialAccounts với localStorage
 function syncAccountsWithInitial() {
-  const storedAccounts = JSON.parse(localStorage.getItem(ACCOUNTS_STORAGE_KEY)) || [];
-  const updatedAccounts = initialAccounts.map(initialAcc => {
+  let storedAccounts = JSON.parse(localStorage.getItem(ACCOUNTS_STORAGE_KEY)) || [];
+  let updatedAccounts = [];
+
+  // Thêm hoặc cập nhật tài khoản từ initialAccounts
+  initialAccounts.forEach(initialAcc => {
     const storedAcc = storedAccounts.find(acc => acc.username === initialAcc.username);
-    return storedAcc ? { ...initialAcc, ...storedAcc, locked: initialAcc.locked, expiry: initialAcc.expiry } : initialAcc;
+    if (storedAcc) {
+      // Nếu tài khoản đã tồn tại trong localStorage, giữ các thuộc tính như locked và expiry từ localStorage
+      updatedAccounts.push({
+        ...initialAcc,
+        locked: storedAcc.locked,
+        expiry: storedAcc.expiry
+      });
+    } else {
+      // Nếu tài khoản chưa tồn tại, thêm mới từ initialAccounts
+      updatedAccounts.push({ ...initialAcc });
+    }
   });
 
-  // Thêm các tài khoản mới từ localStorage mà không có trong initialAccounts
+  // Thêm các tài khoản từ localStorage mà không có trong initialAccounts
   storedAccounts.forEach(storedAcc => {
     if (!updatedAccounts.find(acc => acc.username === storedAcc.username)) {
       updatedAccounts.push(storedAcc);
     }
   });
 
+  // Lưu lại vào localStorage
   localStorage.setItem(ACCOUNTS_STORAGE_KEY, JSON.stringify(updatedAccounts));
 }
 
