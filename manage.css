@@ -1,19 +1,22 @@
 * {
   font-family: Arial, sans-serif !important;
+  box-sizing: border-box;
 }
 
 body {
   margin: 0;
-  padding: 20px;
+  padding: 10px;
   background: #f4f4f4;
   position: relative;
+  min-height: 100vh;
 }
 
 .container {
-  max-width: 800px;
+  max-width: 90vw;
+  width: 100%;
   margin: 0 auto;
   background: white;
-  padding: 20px;
+  padding: 15px;
   border-radius: 8px;
   box-shadow: 0 0 10px rgba(0,0,0,0.1);
   position: relative;
@@ -23,16 +26,56 @@ body {
 h1 {
   text-align: center;
   color: #333;
+  font-size: 1.5rem;
 }
 
 .manage-form {
   text-align: center;
 }
 
+#account-table th, #account-table td {
+  border: 1px solid #ccc;
+  padding: 8px;
+  font-size: 14px;
+  text-align: left;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+
+.lock-button, .activate-button {
+  padding: 5px 10px;
+  color: white;
+  border: none;
+  cursor: pointer;
+  font-size: 12px;
+  border-radius: 3px;
+  touch-action: manipulation;
+}
+
+.lock-button {
+  background: #dc3545;
+}
+
+.lock-button:hover {
+  background: #c82333;
+}
+
+.activate-button {
+  background: #28a745;
+}
+
+.activate-button:hover {
+  background: #218838;
+}
+
 #notification-container {
   position: fixed;
-  top: 20px;
-  right: 20px;
+  top: 10px;
+  right: 10px;
   z-index: 1000;
   display: flex;
   flex-direction: column;
@@ -74,5 +117,45 @@ h1 {
   }
   to {
     opacity: 0;
+  }
+}
+
+/* Media Queries cho Mobile */
+@media (max-width: 768px) {
+  .container {
+    padding: 10px;
+    max-width: 100%;
+  }
+
+  h1 {
+    font-size: 1.2rem;
+  }
+
+  #account-table {
+    font-size: 12px;
+  }
+
+  #account-table th, #account-table td {
+    padding: 5px;
+  }
+
+  .action-buttons {
+    flex-direction: column;
+    gap: 3px;
+  }
+
+  .lock-button, .activate-button {
+    width: 100%;
+    padding: 8px;
+  }
+
+  #notification-container {
+    top: 5px;
+    right: 5px;
+  }
+
+  .notification {
+    font-size: 12px;
+    min-width: 150px;
   }
 }
