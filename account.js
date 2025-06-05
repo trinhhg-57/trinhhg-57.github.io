@@ -1,4 +1,4 @@
-// account.js
+// accounts.js
 const ACCOUNTS_STORAGE_KEY = 'accounts';
 
 const initialAccounts = [
@@ -27,7 +27,7 @@ const initialAccounts = [
     username: "user3",
     password: "password3",
     isAdmin: false,
-    locked: false,
+    locked: true,
     expiry: Date.now() + 2 * 60 * 60 * 1000 // Hết hạn sau 2 giờ
   }
 ];
@@ -41,11 +41,11 @@ function syncAccountsWithInitial() {
   initialAccounts.forEach(initialAcc => {
     const storedAcc = storedAccounts.find(acc => acc.username === initialAcc.username);
     if (storedAcc) {
-      // Nếu tài khoản đã tồn tại trong localStorage, giữ các thuộc tính như locked và expiry từ localStorage
+      // Nếu tài khoản đã tồn tại trong localStorage, cập nhật trạng thái locked từ initialAccounts
+      // nhưng giữ nguyên expiry từ localStorage (để tránh reset thời gian hết hạn)
       updatedAccounts.push({
         ...initialAcc,
-        locked: storedAcc.locked,
-        expiry: storedAcc.expiry
+        expiry: storedAcc.expiry // Giữ expiry từ localStorage
       });
     } else {
       // Nếu tài khoản chưa tồn tại, thêm mới từ initialAccounts
