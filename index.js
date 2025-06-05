@@ -78,14 +78,13 @@ document.addEventListener('DOMContentLoaded', () => {
   function escapeHtml(str) {
     try {
       if (typeof str !== 'string') return '';
-      const htmlEntities = {
-        '&': '&amp;',
-        '<': '&lt;',
-        '>': '&gt;',
-        '"': '&quot;',
-        "'": '&#39;'
-      };
-      return str.replace(/[&<>"']/g, match => htmlEntities[match] || match);
+      return str.replace(/[&<>"']/g, match => ({
+        '&': '&',
+        '<': '<',
+        '>': '>',
+        '"': '"',
+        "'": '''
+      })[match] || match);
     } catch (error) {
       console.error('Error in escapeHtml:', error);
       return str || '';
@@ -136,19 +135,13 @@ document.addEventListener('DOMContentLoaded', () => {
     if (elements.appTitle) elements.appTitle.forEach(el => el.textContent = translations[lang].appTitle);
     if (elements.contactText1) {
       const textNode = Array.from(elements.contactText1.childNodes).find(node => node.nodeType === Node.TEXT_NODE);
-      if (textNode) {
-        textNode.textContent = translations[lang].contactText1;
-      } else {
-        elements.contactText1.insertBefore(document.createTextNode(translations[lang].contactText1), elements.contactText1.firstChild);
-      }
+      if (textNode) textNode.textContent = translations[lang].contactText1;
+      else elements.contactText1.insertBefore(document.createTextNode(translations[lang].contactText1), elements.contactText1.firstChild);
     }
     if (elements.renewAccount) {
       const textNode = Array.from(elements.renewAccount.childNodes).find(node => node.nodeType === Node.TEXT_NODE);
-      if (textNode) {
-        textNode.textContent = translations[lang].renewAccount;
-      } else {
-        elements.renewAccount.insertBefore(document.createTextNode(translations[lang].renewAccount), elements.renewAccount.firstChild);
-      }
+      if (textNode) textNode.textContent = translations[lang].renewAccount;
+      else elements.renewAccount.insertBefore(document.createTextNode(translations[lang].renewAccount), elements.renewAccount.firstChild);
     }
     if (elements.settingsTab) elements.settingsTab.textContent = translations[lang].settingsTab;
     if (elements.replaceTab) elements.replaceTab.textContent = translations[lang].replaceTab;
@@ -182,8 +175,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (elements.password) elements.password.placeholder = translations[lang].passwordPlaceholder;
     if (elements.loginButton) elements.loginButton.textContent = translations[lang].loginButton;
 
-    const punctuationItems = document.querySelectorAll('.punctuation-item');
-    punctuationItems.forEach(item => {
+    document.querySelectorAll('.punctuation-item').forEach(item => {
       const findInput = item.querySelector('.find');
       const replaceInput = item.querySelector('.replace');
       const removeBtn = item.querySelector('.remove');
@@ -208,14 +200,18 @@ document.addEventListener('DOMContentLoaded', () => {
   function updateButtonStates() {
     const matchCaseButton = document.getElementById('match-case');
     if (matchCaseButton) {
-      matchCaseButton.textContent = matchCaseEnabled ? translations[currentLang].matchCaseOn : translations[lang].matchCaseOff;
+      matchCaseButton.textContent = matchCaseEnabled ? translations[currentLang].matchCaseOn : translations[currentLang].matchCaseOff;
       matchCaseButton.style.background = matchCaseEnabled ? '#28a745' : '#6c757d';
     }
   }
 
   function showNotification(message, type = 'success') {
+    console.log(`Showing notification: ${message} (${type})`);
     const container = document.getElementById('notification-container');
-    if (!container) return;
+    if (!container) {
+      console.error('Notification container not found');
+      return;
+    }
 
     const notification = document.createElement('div');
     notification.className = `notification ${type}`;
@@ -297,25 +293,33 @@ document.addEventListener('DOMContentLoaded', () => {
       list.appendChild(item);
     }
 
-    const removeHandler = (e) => {
+    removeButton.addEventListener('click', (e) => {
       e.preventDefault();
       item.remove();
-    };
-
-    removeButton.addEventListener('click', removeHandler);
-    removeButton.addEventListener('touchstart', removeHandler);
+    });
+    removeButton.addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      item.remove();
+    });
   }
 
   function checkLoginStatus() {
+    console.log('Checking login status...');
     const user = JSON.parse(localStorage.getItem('currentUser'));
     const loginContainer = document.getElementById('login-container');
     const mainContainer = document.getElementById('main-container');
-    if (!loginContainer || !mainContainer) return;
+    if (!loginContainer || !mainContainer) {
+      console.error('Login or main container not found');
+      return;
+    }
 
     if (user) {
+      console.log('Found currentUser:', user);
       const accounts = getAccounts();
+      console.log('Accounts:', accounts);
       const account = accounts.find(acc => acc.username === user.username && acc.password === user.password);
       if (account && !account.locked && (account.isAdmin || (account.expiry && Date.now() < account.expiry))) {
+        console.log('Valid account found:', account);
         currentUser = account;
         loginContainer.style.display = 'none';
         mainContainer.style.display = 'block';
@@ -327,6 +331,7 @@ document.addEventListener('DOMContentLoaded', () => {
           document.getElementById('key-timer-user').style.display = 'none';
         }
       } else {
+        console.log('Invalid or expired account, clearing currentUser');
         localStorage.removeItem('currentUser');
         loginContainer.style.display = 'block';
         mainContainer.style.display = 'none';
@@ -335,6 +340,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       }
     } else {
+      console.log('No currentUser, showing login container');
       loginContainer.style.display = 'block';
       mainContainer.style.display = 'none';
     }
@@ -366,6 +372,58 @@ document.addEventListener('DOMContentLoaded', () => {
     const timerInterval = setInterval(update, 1000);
   }
 
+  function handleLogin() {
+    console.log('Login button triggered');
+    const usernameInput = document.getElementById('username');
+    const passwordInput = document.getElementById('password');
+    if (!usernameInput || !passwordInput) {
+      console.error('Username or password input not found');
+      showNotification('Lỗi hệ thống, vui lòng thử lại!', 'error');
+      return;
+    }
+
+    const username = usernameInput.value.trim();
+    const password = passwordInput.value.trim();
+    console.log('Login attempt:', { username, password });
+
+    if (!username || !password) {
+      showNotification(translations[currentLang].emptyCredentials, 'error');
+      return;
+    }
+
+    const accounts = getAccounts();
+    console.log('Available accounts:', accounts);
+    const account = accounts.find(acc => acc.username === username && acc.password === password);
+
+    if (!account) {
+      showNotification(translations[currentLang].invalidCredentials, 'error');
+      usernameInput.value = '';
+      passwordInput.value = '';
+      return;
+    }
+
+    if (account.locked || (!account.isAdmin && account.expiry && Date.now() >= account.expiry)) {
+      showNotification(translations[currentLang].keyExpired, 'error');
+      usernameInput.value = '';
+      passwordInput.value = '';
+      return;
+    }
+
+    currentUser = account;
+    localStorage.setItem('currentUser', JSON.stringify({ username, password }));
+    console.log('Login successful, updating UI');
+    document.getElementById('login-container').style.display = 'none';
+    document.getElementById('main-container').style.display = 'block';
+    document.getElementById('manage-button').style.display = account.isAdmin ? 'inline-block' : 'none';
+    document.getElementById('key-timer-user').style.display = account.isAdmin ? 'none' : 'block';
+    showNotification(translations[currentLang].loginSuccess, 'success');
+    usernameInput.value = '';
+    passwordInput.value = '';
+    if (!account.isAdmin) {
+      updateKeyTimer(account.expiry);
+    }
+  }
+
   function attachButtonEvents() {
     const buttons = {
       matchCaseButton: document.getElementById('match-case'),
@@ -387,25 +445,17 @@ document.addEventListener('DOMContentLoaded', () => {
       loginButton: document.getElementById('login-button')
     };
 
-    const addTouchAndClick = (element, handler) => {
-      if (element) {
-        element.addEventListener('click', handler);
-        element.addEventListener('touchstart', (e) => {
-          e.preventDefault();
-          handler(e);
-        });
-      }
-    };
+    if (buttons.matchCaseButton) {
+      buttons.matchCaseButton.addEventListener('click', () => {
+        matchCaseEnabled = !matchCaseEnabled;
+        updateButtonStates();
+        saveSettings();
+      });
+    }
 
-    addTouchAndClick(buttons.matchCaseButton, () => {
-      matchCaseEnabled = !matchCaseEnabled;
-      updateButtonStates();
-      saveSettings();
-    });
-
-    addTouchAndClick(buttons.deleteModeButton, () => {
-      if (currentMode !== 'default') {
-        if (confirm(`Bạn có chắc chắn muốn xóa chế độ "${currentMode}"?`)) {
+    if (buttons.deleteModeButton) {
+      buttons.deleteModeButton.addEventListener('click', () => {
+        if (currentMode !== 'default' && confirm(`Bạn có chắc chắn muốn xóa chế độ "${currentMode}"?`)) {
           const settings = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY)) || { modes: { default: { pairs: [], matchCase: false } } };
           if (settings.modes[currentMode]) {
             delete settings.modes[currentMode];
@@ -415,61 +465,67 @@ document.addEventListener('DOMContentLoaded', () => {
             showNotification(translations[currentLang].modeDeleted.replace('{mode}', currentMode), 'success');
           }
         }
-      }
-    });
+      });
+    }
 
-    addTouchAndClick(buttons.renameModeButton, () => {
-      const newName = prompt(translations[currentLang].renamePrompt);
-      if (newName && !newName.includes('mode_') && newName.trim() !== '' && newName !== currentMode) {
-        const settings = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY)) || { modes: { default: { pairs: [], matchCase: false } } };
-        if (settings.modes[currentMode]) {
-          settings.modes[newName] = settings.modes[currentMode];
-          delete settings.modes[currentMode];
+    if (buttons.renameModeButton) {
+      buttons.renameModeButton.addEventListener('click', () => {
+        const newName = prompt(translations[currentLang].renamePrompt);
+        if (newName && !newName.includes('mode_') && newName.trim() !== '' && newName !== currentMode) {
+          const settings = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY)) || { modes: { default: { pairs: [], matchCase: false } } };
+          if (settings.modes[currentMode]) {
+            settings.modes[newName] = settings.modes[currentMode];
+            delete settings.modes[currentMode];
+            localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(settings));
+            currentMode = newName;
+            loadModes();
+            showNotification(translations[currentLang].renameSuccess.replace('{mode}', newName), 'success');
+          } else {
+            showNotification(translations[currentLang].renameError, 'error');
+          }
+        }
+      });
+    }
+
+    if (buttons.addModeButton) {
+      buttons.addModeButton.addEventListener('click', () => {
+        const newMode = prompt(translations[currentLang].newModePrompt);
+        if (newMode && !newMode.includes('mode_') && newMode.trim() !== '' && newMode !== 'default') {
+          const settings = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY)) || { modes: { default: { pairs: [], matchCase: false } } };
+          if (settings.modes[newMode]) {
+            showNotification(translations[currentLang].invalidModeName, 'error');
+            return;
+          }
+          settings.modes[newMode] = { pairs: [], matchCase: false };
           localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(settings));
-          currentMode = newName;
+          currentMode = newMode;
           loadModes();
-          showNotification(translations[currentLang].renameSuccess.replace('{mode}', newName), 'success');
+          showNotification(translations[currentLang].modeCreated.replace('{mode}', newMode), 'success');
         } else {
-          showNotification(translations[currentLang].renameError, 'error');
-        }
-      }
-    });
-
-    addTouchAndClick(buttons.addModeButton, () => {
-      const newMode = prompt(translations[currentLang].newModePrompt);
-      if (newMode && !newMode.includes('mode_') && newMode.trim() !== '' && newMode !== 'default') {
-        const settings = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY)) || { modes: { default: { pairs: [], matchCase: false } } };
-        if (settings.modes[newMode]) {
           showNotification(translations[currentLang].invalidModeName, 'error');
-          return;
         }
-        settings.modes[newMode] = { pairs: [], matchCase: false };
-        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(settings));
-        currentMode = newMode;
-        loadModes();
-        showNotification(translations[currentLang].modeCreated.replace('{mode}', newMode), 'success');
-      } else {
-        showNotification(translations[currentLang].invalidModeName, 'error');
-      }
-    });
+      });
+    }
 
-    addTouchAndClick(buttons.copyModeButton, () => {
-      const newMode = prompt(translations[currentLang].newModePrompt);
-      if (newMode && !newMode.includes('mode_') && newMode.trim() !== '' && newMode !== 'default') {
-        const settings = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY)) || { modes: { default: { pairs: [], matchCase: false } } };
-        if (settings.modes[newMode]) {
+    if (buttons.copyModeButton) {
+      buttons.copyModeButton.addEventListener('click', () => {
+        const newMode = prompt(translations[currentLang].newModePrompt);
+        if (newMode && !newMode.includes('mode_') && newMode.trim() !== '' && newMode !== 'default') {
+          const settings = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY)) || { modes: { default: { pairs: [], matchCase: false } } };
+          if (settings.modes[newMode]) {
+            showNotification(translations[currentLang].invalidModeName, 'error');
+            return;
+          }
+          settings.modes[newMode] = JSON.parse(JSON.stringify(settings.modes[currentMode] || { pairs: [], matchCase: false }));
+          localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(settings));
+          currentMode = newMode;
+          loadModes();
+          showNotification(translations[currentLang].modeCreated.replace('{mode}', newMode), 'success');
+        } else {
           showNotification(translations[currentLang].invalidModeName, 'error');
-          return;
         }
-        settings.modes[newMode] = JSON.parse(JSON.stringify(settings.modes[currentMode] || { pairs: [], matchCase: false }));
-        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(settings));
-        currentMode = newMode;
-        loadModes();
-        showNotification(translations[currentLang].modeCreated.replace('{mode}', newMode), 'success');
-      } else {
-        showNotification(translations[currentLang].invalidModeName, 'error');
-      }
-    });
+      });
+    }
 
     if (buttons.modeSelect) {
       buttons.modeSelect.addEventListener('change', (e) => {
@@ -480,257 +536,238 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
 
-    addTouchAndClick(buttons.addPairButton, () => {
-      addPair('', '');
-    });
+    if (buttons.addPairButton) {
+      buttons.addPairButton.addEventListener('click', () => addPair('', ''));
+    }
 
-    addTouchAndClick(buttons.saveSettingsButton, () => {
-      saveSettings();
-    });
+    if (buttons.saveSettingsButton) {
+      buttons.saveSettingsButton.addEventListener('click', () => saveSettings());
+    }
 
-    addTouchAndClick(buttons.manageButton, () => {
-      window.open('manage.html', '_blank');
-    });
+    if (buttons.manageButton) {
+      buttons.manageButton.addEventListener('click', () => window.open('manage.html', '_blank'));
+    }
 
-    addTouchAndClick(buttons.replaceButton, () => {
-      const inputTextArea = document.getElementById('input-text');
-      if (!inputTextArea || !inputTextArea.value) {
-        showNotification(translations[currentLang].noTextToReplace, 'error');
-        return;
-      }
-
-      const settings = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY)) || { modes: { default: { pairs: [], matchCase: false } } };
-      let outputText = inputTextArea.value;
-      const modeSettings = settings.modes?.[currentMode] || { pairs: [], matchCase: false };
-      const pairs = modeSettings.pairs || [];
-      if (pairs.length === 0) {
-        showNotification(translations[currentLang].noPairsConfigured, 'error');
-        return;
-      }
-
-      const matchCase = modeSettings.matchCase || false;
-
-      pairs.forEach(pair => {
-        let find = pair.find;
-        let replace = pair.replace !== undefined ? pair.replace : '';
-        if (!find) return;
-
-        let findMatch, replaceMatch;
-        const quoteRegex = /^(['"])(.*)\1$/;
-        const parenRegex = /^(\()(.*)(\))$/;
-
-        findMatch = find.match(quoteRegex) || find.match(parenRegex);
-        replaceMatch = replace.match(quoteRegex) || replace.match(parenRegex);
-
-        let findCore = findMatch ? findMatch[2] : find;
-        let replaceCore = replaceMatch ? replaceMatch[2] : replace;
-        let findPrefix = findMatch ? findMatch[1] : '';
-        let findSuffix = findMatch ? (findMatch[3] || findMatch[1]) : '';
-        let replacePrefix = replaceMatch ? replaceMatch[1] : (findMatch ? findPrefix : '');
-        let replaceSuffix = replaceMatch ? (replaceMatch[3] || replaceMatch[1]) : (findMatch ? findSuffix : '');
-
-        let regexPattern = escapeRegExp(findCore);
-        if (findMatch) {
-          regexPattern = `${escapeRegExp(findPrefix)}${regexPattern}${escapeRegExp(findSuffix)}`;
+    if (buttons.replaceButton) {
+      buttons.replaceButton.addEventListener('click', () => {
+        const inputTextArea = document.getElementById('input-text');
+        if (!inputTextArea || !inputTextArea.value) {
+          showNotification(translations[currentLang].noTextToReplace, 'error');
+          return;
         }
 
-        const regexFlags = matchCase ? 'gu' : 'giu';
-        const regex = new RegExp(regexPattern, regexFlags);
+        const settings = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY)) || { modes: { default: { pairs: [], matchCase: false } } };
+        let outputText = inputTextArea.value;
+        const modeSettings = settings.modes?.[currentMode] || { pairs: [], matchCase: false };
+        const pairs = modeSettings.pairs || [];
+        if (pairs.length === 0) {
+          showNotification(translations[currentLang].noPairsConfigured, 'error');
+          return;
+        }
 
-        if (matchCase) {
-          outputText = outputText.replace(regex, (match, offset, string) => {
-            const isStartOfLine = offset === 0 || string[offset - 1] === '\n';
-            const isAfterPeriod = offset > 1 && string.substring(offset - 2, offset).match(/\.\s/);
+        const matchCase = modeSettings.matchCase || false;
 
-            let finalReplaceCore = replaceCore;
-            if (isStartOfLine || isAfterPeriod) {
-              finalReplaceCore = replaceCore.charAt(0).toUpperCase() + replaceCore.slice(1);
-            }
+        pairs.forEach(pair => {
+          let find = pair.find;
+          let replace = pair.replace !== undefined ? pair.replace : '';
+          if (!find) return;
 
-            return `${replacePrefix}${finalReplaceCore}${replaceSuffix}`;
+          let findMatch, replaceMatch;
+          const quoteRegex = /^(['"])(.*)\1$/;
+          const parenRegex = /^(\()(.*)(\))$/;
+
+          findMatch = find.match(quoteRegex) || find.match(parenRegex);
+          replaceMatch = replace.match(quoteRegex) || replace.match(parenRegex);
+
+          let findCore = findMatch ? findMatch[2] : find;
+          let replaceCore = replaceMatch ? replaceMatch[2] : replace;
+          let findPrefix = findMatch ? findMatch[1] : '';
+          let findSuffix = findMatch ? (findMatch[3] || findMatch[1]) : '';
+          let replacePrefix = replaceMatch ? replaceMatch[1] : (findMatch ? findPrefix : '');
+          let replaceSuffix = replaceMatch ? (replaceMatch[3] || replaceMatch[1]) : (findMatch ? findSuffix : '');
+
+          let regexPattern = escapeRegExp(findCore);
+          if (findMatch) {
+            regexPattern = `${escapeRegExp(findPrefix)}${regexPattern}${escapeRegExp(findSuffix)}`;
+          }
+
+          const regexFlags = matchCase ? 'gu' : 'giu';
+          const regex = new RegExp(regexPattern, regexFlags);
+
+          if (matchCase) {
+            outputText = outputText.replace(regex, (match, offset, string) => {
+              const isStartOfLine = offset === 0 || string[offset - 1] === '\n';
+              const isAfterPeriod = offset > 1 && string.substring(offset - 2, offset).match(/\.\s/);
+
+              let finalReplaceCore = replaceCore;
+              if (isStartOfLine || isAfterPeriod) {
+                finalReplaceCore = replaceCore.charAt(0).toUpperCase() + replaceCore.slice(1);
+              }
+
+              return `${replacePrefix}${finalReplaceCore}${replaceSuffix}`;
+            });
+          } else {
+            const replacement = `${replacePrefix}${replaceCore}${replaceSuffix}`;
+            outputText = outputText.replace(regex, replacement);
+          }
+        });
+
+        const paragraphs = outputText.split('\n').filter(p => p.trim());
+        outputText = paragraphs.join('\n\n');
+
+        const outputTextArea = document.getElementById('output-text');
+        if (outputTextArea) {
+          outputTextArea.value = outputText;
+          inputTextArea.value = '';
+          showNotification(translations[currentLang].textReplaced, 'success');
+        }
+      });
+    }
+
+    if (buttons.copyButton) {
+      buttons.copyButton.addEventListener('click', () => {
+        const outputTextArea = document.getElementById('output-text');
+        if (outputTextArea && outputTextArea.value) {
+          navigator.clipboard.writeText(outputTextArea.value).then(() => {
+            showNotification(translations[currentLang].textCopied, 'success');
+          }).catch(() => {
+            showNotification(translations[currentLang].failedToCopy, 'error');
           });
         } else {
-          const replacement = `${replacePrefix}${replaceCore}${replaceSuffix}`;
-          outputText = outputText.replace(regex, replacement);
+          showNotification(translations[currentLang].noTextToCopy, 'error');
         }
       });
+    }
 
-      const paragraphs = outputText.split('\n').filter(p => p.trim());
-      outputText = paragraphs.join('\n\n');
-
-      const outputTextArea = document.getElementById('output-text');
-      if (outputTextArea) {
-        outputTextArea.value = outputText;
-        inputTextArea.value = '';
-        showNotification(translations[currentLang].textReplaced, 'success');
-      }
-    });
-
-    addTouchAndClick(buttons.copyButton, () => {
-      const outputTextArea = document.getElementById('output-text');
-      if (outputTextArea && outputTextArea.value) {
-        navigator.clipboard.writeText(outputTextArea.value).then(() => {
-          showNotification(translations[currentLang].textCopied, 'success');
-        }).catch(err => {
-          showNotification(translations[currentLang].failedToCopy, 'error');
-        });
-      } else {
-        showNotification(translations[currentLang].noTextToCopy, 'error');
-      }
-    });
-
-    addTouchAndClick(buttons.splitButton, () => {
-      const inputTextArea = document.getElementById('split-input-text');
-      const output1TextArea = document.getElementById('output1-text');
-      const output2TextArea = document.getElementById('output2-text');
-      if (!inputTextArea || !inputTextArea.value) {
-        showNotification(translations[currentLang].noTextToSplit, 'error');
-        return;
-      }
-
-      let text = inputTextArea.value;
-      const chapterRegex = /^Chương\s+(\d+)(?::\s*(.*))?$/m;
-      let chapterNum = 1;
-      let chapterTitle = '';
-
-      const match = text.match(chapterRegex);
-      if (match) {
-        chapterNum = parseInt(match[1]);
-        chapterTitle = match[2] ? `: ${match[2]}` : '';
-        text = text.replace(chapterRegex, '').trim();
-      }
-
-      const paragraphs = text.split('\n').filter(p => p.trim());
-      const totalWords = text.split(/\s+/).filter(word => word.trim()).length;
-      const targetWords = Math.floor(totalWords / 2);
-
-      let wordCount = 0;
-      let splitIndex = 0;
-      for (let i = 0; i < paragraphs.length; i++) {
-        const wordsInParagraph = paragraphs[i].split(/\s+/).filter(word => word.trim()).length;
-        wordCount += wordsInParagraph;
-        if (wordCount >= targetWords) {
-          splitIndex = i + 1;
-          break;
+    if (buttons.splitButton) {
+      buttons.splitButton.addEventListener('click', () => {
+        const inputTextArea = document.getElementById('split-input-text');
+        const output1TextArea = document.getElementById('output1-text');
+        const output2TextArea = document.getElementById('output2-text');
+        if (!inputTextArea || !inputTextArea.value) {
+          showNotification(translations[currentLang].noTextToSplit, 'error');
+          return;
         }
-      }
 
-      const part1 = paragraphs.slice(0, splitIndex).join('\n\n');
-      const part2 = paragraphs.slice(splitIndex).join('\n\n');
+        let text = inputTextArea.value;
+        const chapterRegex = /^Chương\s+(\d+)(?::\s*(.*))?$/m;
+        let chapterNum = 1;
+        let chapterTitle = '';
 
-      if (output1TextArea && output2TextArea) {
-        output1TextArea.value = `Chương ${chapterNum}.1${chapterTitle}\n\n${part1}`;
-        output2TextArea.value = `Chương ${chapterNum}.2${chapterTitle}\n\n${part2}`;
-        inputTextArea.value = '';
-        showNotification('Đã chia chương thành công!', 'success');
-      }
-    });
+        const match = text.match(chapterRegex);
+        if (match) {
+          chapterNum = parseInt(match[1]);
+          chapterTitle = match[2] ? `: ${match[2]}` : '';
+          text = text.replace(chapterRegex, '').trim();
+        }
 
-    addTouchAndClick(buttons.copyButton1, () => {
-      const output1TextArea = document.getElementById('output1-text');
-      if (output1TextArea && output1TextArea.value) {
-        navigator.clipboard.writeText(output1TextArea.value).then(() => {
-          showNotification(translations[currentLang].textCopied, 'success');
-        }).catch(err => {
-          showNotification(translations[currentLang].failedToCopy, 'error');
-        });
-      } else {
-        showNotification(translations[currentLang].noTextToCopy, 'error');
-      }
-    });
+        const paragraphs = text.split('\n').filter(p => p.trim());
+        const totalWords = text.split(/\s+/).filter(word => word.trim()).length;
+        const targetWords = Math.floor(totalWords / 2);
 
-    addTouchAndClick(buttons.copyButton2, () => {
-      const output2TextArea = document.getElementById('output2-text');
-      if (output2TextArea && output2TextArea.value) {
-        navigator.clipboard.writeText(output2TextArea.value).then(() => {
-          showNotification(translations[currentLang].textCopied, 'success');
-        }).catch(err => {
-          showNotification(translations[currentLang].failedToCopy, 'error');
-        });
-      } else {
-        showNotification(translations[currentLang].noTextToCopy, 'error');
-      }
-    });
+        let wordCount = 0;
+        let splitIndex = 0;
+        for (let i = 0; i < paragraphs.length; i++) {
+          const wordsInParagraph = paragraphs[i].split(/\s+/).filter(word => word.trim()).length;
+          wordCount += wordsInParagraph;
+          if (wordCount >= targetWords) {
+            splitIndex = i + 1;
+            break;
+          }
+        }
 
-    addTouchAndClick(buttons.exportSettingsButton, () => {
-      const settings = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY)) || { modes: { default: { pairs: [], matchCase: false } } };
-      const blob = new Blob([JSON.stringify(settings, null, 2)], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'extension_settings.json';
-      a.click();
-      URL.revokeObjectURL(url);
-      showNotification(translations[currentLang].settingsExported, 'success');
-    });
+        const part1 = paragraphs.slice(0, splitIndex).join('\n\n');
+        const part2 = paragraphs.slice(splitIndex).join('\n\n');
 
-    addTouchAndClick(buttons.importSettingsButton, () => {
-      const input = document.createElement('input');
-      input.type = 'file';
-      input.accept = '.json';
-      input.addEventListener('change', (event) => {
-        const file = event.target.files[0];
-        if (file) {
-          const reader = new FileReader();
-          reader.onload = (e) => {
-            try {
-              const settings = JSON.parse(e.target.result);
-              localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(settings));
-              loadModes();
-              showNotification(translations[currentLang].settingsImported, 'success');
-            } catch (err) {
-              showNotification(translations[currentLang].importError, 'error');
-            }
-          };
-          reader.readAsText(file);
+        if (output1TextArea && output2TextArea) {
+          output1TextArea.value = `Chương ${chapterNum}.1${chapterTitle}\n\n${part1}`;
+          output2TextArea.value = `Chương ${chapterNum}.2${chapterTitle}\n\n${part2}`;
+          inputTextArea.value = '';
+          showNotification('Đã chia chương thành công!', 'success');
         }
       });
-      input.click();
-    });
+    }
 
-    // Sửa xử lý nút đăng nhập
-    addTouchAndClick(buttons.loginButton, (e) => {
-      e.preventDefault(); // Ngăn hành vi mặc định
-      const usernameInput = document.getElementById('username');
-      const passwordInput = document.getElementById('password');
-      const username = usernameInput?.value.trim();
-      const password = passwordInput?.value.trim();
+    if (buttons.copyButton1) {
+      buttons.copyButton1.addEventListener('click', () => {
+        const output1TextArea = document.getElementById('output1-text');
+        if (output1TextArea && output1TextArea.value) {
+          navigator.clipboard.writeText(output1TextArea.value).then(() => {
+            showNotification(translations[currentLang].textCopied, 'success');
+          }).catch(() => {
+            showNotification(translations[currentLang].failedToCopy, 'error');
+          });
+        } else {
+          showNotification(translations[currentLang].noTextToCopy, 'error');
+        }
+      });
+    }
 
-      if (!username || !password) {
-        showNotification(translations[currentLang].emptyCredentials, 'error');
-        return;
-      }
+    if (buttons.copyButton2) {
+      buttons.copyButton2.addEventListener('click', () => {
+        const output2TextArea = document.getElementById('output2-text');
+        if (output2TextArea && output2TextArea.value) {
+          navigator.clipboard.writeText(output2TextArea.value).then(() => {
+            showNotification(translations[currentLang].textCopied, 'success');
+          }).catch(() => {
+            showNotification(translations[currentLang].failedToCopy, 'error');
+          });
+        } else {
+          showNotification(translations[currentLang].noTextToCopy, 'error');
+        }
+      });
+    }
 
-      const accounts = getAccounts();
-      const account = accounts.find(acc => acc.username === username && acc.password === password);
+    if (buttons.exportSettingsButton) {
+      buttons.exportSettingsButton.addEventListener('click', () => {
+        const settings = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY)) || { modes: { default: { pairs: [], matchCase: false } } };
+        const blob = new Blob([JSON.stringify(settings, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'extension_settings.json';
+        a.click();
+        URL.revokeObjectURL(url);
+        showNotification(translations[currentLang].settingsExported, 'success');
+      });
+    }
 
-      if (!account) {
-        showNotification(translations[currentLang].invalidCredentials, 'error');
-        usernameInput.value = '';
-        passwordInput.value = '';
-        return;
-      }
+    if (buttons.importSettingsButton) {
+      buttons.importSettingsButton.addEventListener('click', () => {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.json';
+        input.addEventListener('change', (event) => {
+          const file = event.target.files[0];
+          if (file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+              try {
+                const settings = JSON.parse(e.target.result);
+                localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(settings));
+                loadModes();
+                showNotification(translations[currentLang].settingsImported, 'success');
+              } catch (err) {
+                showNotification(translations[currentLang].importError, 'error');
+              }
+            };
+            reader.readAsText(file);
+          }
+        });
+        input.click();
+      });
+    }
 
-      if (account.locked || (!account.isAdmin && account.expiry && Date.now() >= account.expiry)) {
-        showNotification(translations[currentLang].keyExpired, 'error');
-        usernameInput.value = '';
-        passwordInput.value = '';
-        return;
-      }
-
-      currentUser = account;
-      localStorage.setItem('currentUser', JSON.stringify({ username, password }));
-      document.getElementById('login-container').style.display = 'none';
-      document.getElementById('main-container').style.display = 'block';
-      document.getElementById('manage-button').style.display = account.isAdmin ? 'inline-block' : 'none';
-      document.getElementById('key-timer-user').style.display = account.isAdmin ? 'none' : 'block';
-      showNotification(translations[currentLang].loginSuccess, 'success');
-      usernameInput.value = '';
-      passwordInput.value = '';
-      if (!account.isAdmin) {
-        updateKeyTimer(account.expiry);
-      }
-    });
+    if (buttons.loginButton) {
+      buttons.loginButton.addEventListener('click', (e) => {
+        e.preventDefault();
+        handleLogin();
+      });
+      buttons.loginButton.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        handleLogin();
+      });
+    }
   }
 
   function saveSettings() {
@@ -747,29 +784,20 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     const settings = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY)) || { modes: { default: { pairs: [], matchCase: false } } };
-    settings.modes[currentMode] = {
-      pairs: pairs,
-      matchCase: matchCaseEnabled
-    };
+    settings.modes[currentMode] = { pairs, matchCase: matchCaseEnabled };
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(settings));
     loadSettings();
     showNotification(translations[currentLang].settingsSaved.replace('{mode}', currentMode), 'success');
   }
 
   function attachTabEvents() {
-    const tabButtons = document.querySelectorAll('.tab-button');
-    tabButtons.forEach(button => {
+    document.querySelectorAll('.tab-button').forEach(button => {
       const handler = () => {
         const tabName = button.getAttribute('data-tab');
-        const tabContents = document.querySelectorAll('.tab-content');
-        const allButtons = document.querySelectorAll('.tab-button');
-        tabContents.forEach(tab => tab.classList.remove('active'));
-        allButtons.forEach(btn => btn.classList.remove('active'));
-
+        document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+        document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
         const selectedTab = document.getElementById(tabName);
-        if (selectedTab) {
-          selectedTab.classList.add('active');
-        }
+        if (selectedTab) selectedTab.classList.add('active');
         button.classList.add('active');
       };
       button.addEventListener('click', handler);
@@ -784,17 +812,16 @@ document.addEventListener('DOMContentLoaded', () => {
     return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   }
 
-  // Lắng nghe sự kiện storage để phát hiện tài khoản bị khóa
   window.addEventListener('storage', (event) => {
     if (event.key === ACCOUNTS_STORAGE_KEY) {
       checkLoginStatus();
     }
   });
 
-  // Kiểm tra định kỳ trạng thái tài khoản
   setInterval(checkLoginStatus, 5000);
 
   try {
+    console.log('Initializing app...');
     updateLanguage('vn');
     loadModes();
     attachButtonEvents();
