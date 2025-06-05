@@ -63,7 +63,8 @@ document.addEventListener('DOMContentLoaded', () => {
       keyTimer: 'Thời gian còn lại: {time}',
       keyExpired: 'Tài khoản của bạn đã hết thời gian sử dụng hãy gia hạn thêm!',
       invalidCredentials: 'Tên đăng nhập hoặc mật khẩu không đúng!',
-      loginSuccess: 'Đăng nhập thành công!'
+      loginSuccess: 'Đăng nhập thành công!',
+      emptyCredentials: 'Vui lòng nhập đầy đủ tên đăng nhập và mật khẩu!'
     }
   };
 
@@ -82,7 +83,7 @@ document.addEventListener('DOMContentLoaded', () => {
         '<': '&lt;',
         '>': '&gt;',
         '"': '&quot;',
-        "'": '&#039;'
+        "'": '&#39;'
       };
       return str.replace(/[&<>"']/g, match => htmlEntities[match] || match);
     } catch (error) {
@@ -154,7 +155,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (elements.splitTab) elements.splitTab.textContent = translations[lang].splitTab;
     if (elements.settingsTitle) elements.settingsTitle.textContent = translations[lang].settingsTitle;
     if (elements.modeLabel) elements.modeLabel.textContent = translations[lang].modeLabel;
-    if (elements.addMode) elements.addMode.textContent = translations[lang'].addMode;
+    if (elements.addMode) elements.addMode.textContent = translations[lang].addMode;
     if (elements.copyMode) elements.copyMode.textContent = translations[lang].copyMode;
     if (elements.matchCase) elements.matchCase.textContent = matchCaseEnabled ? translations[lang].matchCaseOn : translations[lang].matchCaseOff;
     if (elements.findPlaceholder) elements.findPlaceholder.placeholder = translations[lang].findPlaceholder;
@@ -207,7 +208,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function updateButtonStates() {
     const matchCaseButton = document.getElementById('match-case');
     if (matchCaseButton) {
-      matchCaseButton.textContent = matchCaseEnabled ? translations[currentLang].matchCaseOn : translations[currentLang].matchCaseOff;
+      matchCaseButton.textContent = matchCaseEnabled ? translations[currentLang].matchCaseOn : translations[lang].matchCaseOff;
       matchCaseButton.style.background = matchCaseEnabled ? '#28a745' : '#6c757d';
     }
   }
@@ -296,10 +297,10 @@ document.addEventListener('DOMContentLoaded', () => {
       list.appendChild(item);
     }
 
-    const removeHandler = () => {
+    const removeHandler = (e) => {
       e.preventDefault();
       item.remove();
-    });
+    };
 
     removeButton.addEventListener('click', removeHandler);
     removeButton.addEventListener('touchstart', removeHandler);
@@ -307,13 +308,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function checkLoginStatus() {
     const user = JSON.parse(localStorage.getItem('currentUser'));
+    const loginContainer = document.getElementById('login-container');
+    const mainContainer = document.getElementById('main-container');
+    if (!loginContainer || !mainContainer) return;
+
     if (user) {
       const accounts = getAccounts();
       const account = accounts.find(acc => acc.username === user.username && acc.password === user.password);
       if (account && !account.locked && (account.isAdmin || (account.expiry && Date.now() < account.expiry))) {
         currentUser = account;
-        document.getElementById('login-container').style.display = 'none';
-        document.getElementById('main-container').style.display = 'block';
+        loginContainer.style.display = 'none';
+        mainContainer.style.display = 'block';
         document.getElementById('manage-button').style.display = account.isAdmin ? 'inline-block' : 'none';
         if (!account.isAdmin) {
           document.getElementById('key-timer-user').style.display = 'block';
@@ -322,16 +327,16 @@ document.addEventListener('DOMContentLoaded', () => {
           document.getElementById('key-timer-user').style.display = 'none';
         }
       } else {
-        document.getElementById('login-container').style.display = 'block';
-        document.getElementById('main-container').style.display = 'none';
-        if (user) {
+        localStorage.removeItem('currentUser');
+        loginContainer.style.display = 'block';
+        mainContainer.style.display = 'none';
+        if (account && (account.locked || (account.expiry && Date.now() >= account.expiry))) {
           showNotification(translations[currentLang].keyExpired, 'error');
-          localStorage.removeItem('currentUser');
         }
       }
     } else {
-      document.getElementById('login-container').style.display = 'block';
-      document.getElementById('main-container').style.display = 'none';
+      loginContainer.style.display = 'block';
+      mainContainer.style.display = 'none';
     }
   }
 
@@ -683,38 +688,47 @@ document.addEventListener('DOMContentLoaded', () => {
       input.click();
     });
 
-    addTouchAndClick(buttons.loginButton, () => {
-      const username = document.getElementById('username').value;
-      const password = document.getElementById('password').value;
+    // Sửa xử lý nút đăng nhập
+    addTouchAndClick(buttons.loginButton, (e) => {
+      e.preventDefault(); // Ngăn hành vi mặc định
+      const usernameInput = document.getElementById('username');
+      const passwordInput = document.getElementById('password');
+      const username = usernameInput?.value.trim();
+      const password = passwordInput?.value.trim();
 
       if (!username || !password) {
-        showNotification('Vui lòng nhập đầy đủ thông tin!', 'error');
+        showNotification(translations[currentLang].emptyCredentials, 'error');
         return;
       }
 
       const accounts = getAccounts();
       const account = accounts.find(acc => acc.username === username && acc.password === password);
+
       if (!account) {
         showNotification(translations[currentLang].invalidCredentials, 'error');
+        usernameInput.value = '';
+        passwordInput.value = '';
         return;
       }
 
       if (account.locked || (!account.isAdmin && account.expiry && Date.now() >= account.expiry)) {
         showNotification(translations[currentLang].keyExpired, 'error');
+        usernameInput.value = '';
+        passwordInput.value = '';
         return;
       }
 
-      if (account.isAdmin || (account.expiry && Date.now() < account.expiry)) {
-        currentUser = account;
-        localStorage.setItem('currentUser', JSON.stringify({ username, password }));
-        document.getElementById('login-container').style.display = 'none';
-        document.getElementById('main-container').style.display = 'block';
-        document.getElementById('manage-button').style.display = account.isAdmin ? 'inline-block' : 'none';
-        document.getElementById('key-timer-user').style.display = account.isAdmin ? 'none' : 'block';
-        showNotification(translations[currentLang].loginSuccess, 'success');
-        if (!account.isAdmin) {
-          updateKeyTimer(account.expiry);
-        }
+      currentUser = account;
+      localStorage.setItem('currentUser', JSON.stringify({ username, password }));
+      document.getElementById('login-container').style.display = 'none';
+      document.getElementById('main-container').style.display = 'block';
+      document.getElementById('manage-button').style.display = account.isAdmin ? 'inline-block' : 'none';
+      document.getElementById('key-timer-user').style.display = account.isAdmin ? 'none' : 'block';
+      showNotification(translations[currentLang].loginSuccess, 'success');
+      usernameInput.value = '';
+      passwordInput.value = '';
+      if (!account.isAdmin) {
+        updateKeyTimer(account.expiry);
       }
     });
   }
