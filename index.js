@@ -8,6 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
     vn: {
       appTitle: 'Tiện Ích Của Trịnh Hg',
       contactText1: 'Liên hệ hỗ trợ qua: ',
+      renewAccount: 'Gia hạn tài khoản: ',
       settingsTab: 'Settings',
       replaceTab: 'Replace',
       splitTab: 'Chia Chương',
@@ -19,29 +20,29 @@ document.addEventListener('DOMContentLoaded', () => {
       matchCaseOn: 'Match Case: Bật',
       matchCaseOff: 'Match Case: Tắt',
       findPlaceholder: 'Tìm ví dụ dấu phẩy',
-      replacePlaceholder: 'Thay thế ví dụ: một dấu phấn',
+      replacePlaceholder: 'Thay thế ví dụ dấu chấm phẩy',
       removeButton: 'Xóa',
       addPair: 'Thêm',
       saveSettings: 'Lưu cài đặt',
       manageButton: 'Quản lý',
       replaceTitle: 'Thay thế Dấu câu',
       inputText: 'Dán văn bản của bạn vào đây...',
-      replaceButtonText: 'Thay thế',
+      replaceButton: 'Thay thế',
       outputText: 'Kết quả sẽ xuất hiện ở đây...',
-      copyButtonText: 'Sao chép',
+      copyButton: 'Sao chép',
       splitTitle: 'Chia Chương',
-      splitInputText: 'Nhập văn bản của bạn vào đây...',
-      splitButtonText: 'Chia chương',
+      splitInputText: 'Dán văn bản của bạn vào đây...',
+      splitButton: 'Chia Chương',
       output1Text: 'Kết quả chương 1 sẽ xuất hiện ở đây...',
       output2Text: 'Kết quả chương 2 sẽ xuất hiện ở đây...',
       noPairsToSave: 'Không có cặp nào để lưu!',
-      settingsSaved: 'Đã lưu cài đặt cho chế độ "{mode}"!',
+      settingsSaved: 'Đã lưu cài đặt cho chế độ "{mode}"!"',
       newModePrompt: 'Nhập tên chế độ mới:',
       invalidModeName: 'Tên chế độ không hợp lệ hoặc đã tồn tại!',
-      modeCreated: 'Đã tạo chế độ "{mode}"!',
+      modeCreated: 'Đã tạo chế độ "{mode}"!"',
       switchedMode: 'Đã chuyển sang chế độ "{mode}"',
       noTextToReplace: 'Không có văn bản để thay thế!',
-      noPairsConfigured: 'Không có cặp tìm kiếm nào được cấu hình!',
+      noPairsConfigured: 'Không có cặp tìm kiếm-thay thế nào được cấu hình!',
       textReplaced: 'Đã thay thế văn bản thành công!',
       textCopied: 'Đã sao chép văn bản vào clipboard!',
       failedToCopy: 'Không thể sao chép văn bản!',
@@ -53,25 +54,23 @@ document.addEventListener('DOMContentLoaded', () => {
       noTextToSplit: 'Không có văn bản để chia!',
       exportSettings: 'Xuất Cài Đặt',
       importSettings: 'Nhập Cài Đặt',
-      settingsExported: 'Đã xuất cài đặt thành công success!',
+      settingsExported: 'Đã xuất cài đặt thành công!',
       settingsImported: 'Đã nhập cài đặt thành công!',
       importError: 'Lỗi khi nhập cài đặt!',
-      loginTitle: 'Đăng Nhập',
       usernamePlaceholder: 'Nhập tên đăng nhập',
       passwordPlaceholder: 'Nhập mật khẩu',
-      loginButtonText: 'Đăng nhập',
+      loginButton: 'Đăng Nhập',
       keyTimer: 'Thời gian còn lại: {time}',
-      keyExpired: 'Tài khoản đã hết hạn hoặc bị khóa!',
+      keyExpired: 'Tài khoản của bạn đã hết thời gian sử dụng hãy gia hạn thêm!',
       invalidCredentials: 'Tên đăng nhập hoặc mật khẩu không đúng!',
-      loginSuccess: 'Đăng nhập thành công!',
-      accountNotFound: 'Tài khoản không tồn tại!'
+      loginSuccess: 'Đăng nhập thành công!'
     }
   };
 
   let currentLang = 'vn';
   let matchCaseEnabled = false;
   let currentMode = 'default';
-  let currentLang = null;
+  let currentUser = null;
   const LOCAL_STORAGE_KEY = 'local_settings';
   const ACCOUNTS_STORAGE_KEY = 'accounts';
 
@@ -83,7 +82,7 @@ document.addEventListener('DOMContentLoaded', () => {
         '<': '&lt;',
         '>': '&gt;',
         '"': '&quot;',
-        "'": '&apos;'
+        "'": '&#039;'
       };
       return str.replace(/[&<>"']/g, match => htmlEntities[match] || match);
     } catch (error) {
@@ -94,11 +93,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function updateLanguage(lang) {
     currentLang = lang;
-    document.documentElementlang.lang = lang;
+    document.documentElement.lang = lang;
 
     const elements = {
       appTitle: document.querySelectorAll('#app-title'),
       contactText1: document.getElementById('contact-text1'),
+      renewAccount: document.getElementById('renew-account'),
       settingsTab: document.getElementById('settings-tab'),
       replaceTab: document.getElementById('replace-tab'),
       splitTab: document.getElementById('split-tab'),
@@ -121,25 +121,32 @@ document.addEventListener('DOMContentLoaded', () => {
       splitTitle: document.getElementById('split-title'),
       splitInputText: document.getElementById('split-input-text'),
       splitButton: document.getElementById('split-button'),
-      output1TextArea: document.getElementById('output1-text'),
-      output2TextArea: document.getElementById('output2-text'),
+      output1Text: document.getElementById('output1-text'),
+      output2Text: document.getElementById('output2-text'),
       copyButton1: document.getElementById('copy-button1'),
       copyButton2: document.getElementById('copy-button2'),
       exportSettings: document.getElementById('export-settings'),
       importSettings: document.getElementById('import-settings'),
-      loginTitle: document.getElementById('login-title'),
-      username: document.querySelectorById('username'),
-      password: document.querySelectorById('password'),
-      loginButton: document.getElementById('login-button-id')
+      username: document.getElementById('username'),
+      password: document.getElementById('password'),
+      loginButton: document.getElementById('login-button')
     };
 
     if (elements.appTitle) elements.appTitle.forEach(el => el.textContent = translations[lang].appTitle);
     if (elements.contactText1) {
-      const textNode = Array.from(elements.contactText1.childNodes).find(node => node.nodeType === Node.Text.Text_NODE);
+      const textNode = Array.from(elements.contactText1.childNodes).find(node => node.nodeType === Node.TEXT_NODE);
       if (textNode) {
-        textNode.textContent = translations[lang].contactTextContent1;
+        textNode.textContent = translations[lang].contactText1;
       } else {
-        elements.contactContent1.insertBefore(document.createTextNode(translations[lang].contactTextContent1), elements.contactTextContent1.firstChild);
+        elements.contactText1.insertBefore(document.createTextNode(translations[lang].contactText1), elements.contactText1.firstChild);
+      }
+    }
+    if (elements.renewAccount) {
+      const textNode = Array.from(elements.renewAccount.childNodes).find(node => node.nodeType === Node.TEXT_NODE);
+      if (textNode) {
+        textNode.textContent = translations[lang].renewAccount;
+      } else {
+        elements.renewAccount.insertBefore(document.createTextNode(translations[lang].renewAccount), elements.renewAccount.firstChild);
       }
     }
     if (elements.settingsTab) elements.settingsTab.textContent = translations[lang].settingsTab;
@@ -147,7 +154,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (elements.splitTab) elements.splitTab.textContent = translations[lang].splitTab;
     if (elements.settingsTitle) elements.settingsTitle.textContent = translations[lang].settingsTitle;
     if (elements.modeLabel) elements.modeLabel.textContent = translations[lang].modeLabel;
-    if (elements.addMode) elements.addMode.textContent = translations[lang].addMode;
+    if (elements.addMode) elements.addMode.textContent = translations[lang'].addMode;
     if (elements.copyMode) elements.copyMode.textContent = translations[lang].copyMode;
     if (elements.matchCase) elements.matchCase.textContent = matchCaseEnabled ? translations[lang].matchCaseOn : translations[lang].matchCaseOff;
     if (elements.findPlaceholder) elements.findPlaceholder.placeholder = translations[lang].findPlaceholder;
@@ -170,7 +177,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (elements.copyButton2) elements.copyButton2.textContent = translations[lang].copyButton + ' 2';
     if (elements.exportSettings) elements.exportSettings.textContent = translations[lang].exportSettings;
     if (elements.importSettings) elements.importSettings.textContent = translations[lang].importSettings;
-    if (elements.loginTitle) elements.loginTitle.textContent = translations[lang].loginTitle;
     if (elements.username) elements.username.placeholder = translations[lang].usernamePlaceholder;
     if (elements.password) elements.password.placeholder = translations[lang].passwordPlaceholder;
     if (elements.loginButton) elements.loginButton.textContent = translations[lang].loginButton;
@@ -290,12 +296,13 @@ document.addEventListener('DOMContentLoaded', () => {
       list.appendChild(item);
     }
 
-    removeButton.addEventListener('click', () => {
+    const removeHandler = () => {
+      e.preventDefault();
       item.remove();
     });
-    removeButton.addEventListener('touchstart', () => {
-      item.remove();
-    });
+
+    removeButton.addEventListener('click', removeHandler);
+    removeButton.addEventListener('touchstart', removeHandler);
   }
 
   function checkLoginStatus() {
@@ -687,23 +694,27 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const accounts = getAccounts();
       const account = accounts.find(acc => acc.username === username && acc.password === password);
-      if (account) {
-        if (!account.locked && (account.isAdmin || (account.expiry && Date.now() < account.expiry))) {
-          currentUser = account;
-          localStorage.setItem('currentUser', JSON.stringify({ username, password }));
-          document.getElementById('login-container').style.display = 'none';
-          document.getElementById('main-container').style.display = 'block';
-          document.getElementById('manage-button').style.display = account.isAdmin ? 'inline-block' : 'none';
-          document.getElementById('key-timer-user').style.display = account.isAdmin ? 'none' : 'block';
-          showNotification(translations[currentLang].loginSuccess, 'success');
-          if (!account.isAdmin) {
-            updateKeyTimer(account.expiry);
-          }
-        } else {
-          showNotification(translations[currentLang].keyExpired, 'error');
-        }
-      } else {
+      if (!account) {
         showNotification(translations[currentLang].invalidCredentials, 'error');
+        return;
+      }
+
+      if (account.locked || (!account.isAdmin && account.expiry && Date.now() >= account.expiry)) {
+        showNotification(translations[currentLang].keyExpired, 'error');
+        return;
+      }
+
+      if (account.isAdmin || (account.expiry && Date.now() < account.expiry)) {
+        currentUser = account;
+        localStorage.setItem('currentUser', JSON.stringify({ username, password }));
+        document.getElementById('login-container').style.display = 'none';
+        document.getElementById('main-container').style.display = 'block';
+        document.getElementById('manage-button').style.display = account.isAdmin ? 'inline-block' : 'none';
+        document.getElementById('key-timer-user').style.display = account.isAdmin ? 'none' : 'block';
+        showNotification(translations[currentLang].loginSuccess, 'success');
+        if (!account.isAdmin) {
+          updateKeyTimer(account.expiry);
+        }
       }
     });
   }
