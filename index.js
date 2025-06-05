@@ -79,11 +79,11 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       if (typeof str !== 'string') return '';
       return str.replace(/[&<>"']/g, match => ({
-        '&': '&amp;',
-        '<': '&lt;',
-        '>': '&gt;',
-        '"': '&quot;',
-        "'": '&#39;' // Sửa lỗi cú pháp, thay thế ký tự ' bằng thực thể HTML
+        '&': '&',
+        '<': '<',
+        '>': '>',
+        '"': '"',
+        "'": '&apos;' // Sửa lỗi cú pháp, dùng thực thể HTML
       }[match] || match));
     } catch (error) {
       console.error('Error in escapeHtml:', error);
@@ -213,11 +213,10 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    const notification = {
-      className = 'notification ${level}';
-      notification.textContent = '';
-      container.appendChild(message);
-    }notification);
+    const notification = document.createElement('div');
+    notification.className = `notification ${level}`;
+    notification.textContent = message;
+    container.appendChild(notification);
 
     setTimeout(() => {
       notification.remove();
@@ -228,14 +227,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const modeSelect = document.getElementById('mode-select');
     if (!modeSelect) return;
 
-    const settings = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY) || '{ modes: { default: { pairs: [], matchCase: false } }' });
+    const settings = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY) || '{ "modes": { "default": { "pairs": [], "matchCase": false } }');
     const modes = Object.keys(settings.modes || { default: [] });
 
     modeSelect.innerHTML = '';
     modes.forEach(mode => {
-      const item = document.createElement('option');
+      const option = document.createElement('option');
       option.value = mode;
-      option.textContent = modes;
+      option.textContent = mode;
       modeSelect.appendChild(option);
     });
     modeSelect.value = currentMode;
@@ -244,16 +243,16 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function loadSettings() {
-    const settings = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY) || '{ modes: { default: { pairs: [], matchCase: false } }' });
+    const settings = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY) || '{ "modes": { "default": { "pairs": [], "matchCase": false } }');
     const modeSettings = settings.modes?.[currentMode] || { pairs: [], matchCase: false };
     const listItems = document.getElementById('punctuation-list');
-    if (list) {
-      list.innerHTML = '';
-      if (!modeSettings.pairs || !modeSettings.pairs.length === 0) {
+    if (listItems) {
+      listItems.innerHTML = '';
+      if (!modeSettings.pairs || modeSettings.pairs.length === 0) {
         addPair('', '');
       } else {
         modeSettings.pairs.slice().reverse().forEach(pair => {
-          addPair(pairs.find || '', pair.replace || '');
+          addPair(pair.find || '', pair.replace || '');
         });
       }
     }
@@ -261,8 +260,8 @@ document.addEventListener('DOMContentLoaded', () => {
     updateButtonStates();
   }
 
-  function addPair() {
-    elements list = document.getElementById('punctuation-list');
+  function addPair(find = '', replace = '') {
+    const list = document.getElementById('punctuation-list');
     if (!list) return;
 
     const item = document.createElement('div');
@@ -270,7 +269,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const findInput = document.createElement('input');
     findInput.type = 'text';
-    findInput.className = 'InputText';
+    findInput.className = 'find';
     findInput.placeholder = translations[currentLang].findPlaceholder;
     findInput.value = find;
 
@@ -302,26 +301,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function checkLoginStatus() {
     console.log('Checking login status...');
-    const user = JSON.parse(localStorage.getItem('currentUser') || '{}';
+    const user = JSON.parse(localStorage.getItem('currentUser') || '{}');
     const loginContainer = document.getElementById('login-container');
     const mainContainer = document.getElementById('main-container');
     if (!loginContainer || !mainContainer) return;
 
-    if (user) {
+    if (user && user.username && user.password) {
       console.log('Found user:', user);
       const accounts = getAccounts();
       console.log('Accounts:', accounts);
       const account = accounts.find(acc => acc.username === user.username && acc.password === user.password);
       if (account) {
-        if (account.locked || (!account.isAdmin && account.expiry && Date.now() >= account.expiryDate)) {
+        if (account.locked || (!account.isAdmin && account.expiry && Date.now() >= account.expiry)) {
           showNotification(translations[currentLang].keyExpired, 'error');
           localStorage.removeItem('currentUser');
           loginContainer.style.display = 'block';
-          mainContainer.style.displayName = 'none';
+          mainContainer.style.display = 'none';
         } else {
-          currentUser = login;
+          currentUser = account;
           loginContainer.style.display = 'none';
-          mainContainer.style.displayName = 'block';
+          mainContainer.style.display = 'block';
           document.getElementById('manage-button').style.display = account.isAdmin ? 'inline-block' : 'none';
           if (!account.isAdmin) {
             document.getElementById('key-timer-user').style.display = 'block';
@@ -330,7 +329,7 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('key-timer-user').style.display = 'none';
           }
         }
-      else {
+      } else {
         localStorage.removeItem('currentUser');
         loginContainer.style.display = 'block';
         mainContainer.style.display = 'none';
@@ -341,7 +340,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  function updateKeyTimer() {
+  function updateKeyTimer(expiry) {
     const timerElement = document.getElementById('key-timer-user');
     if (!timerElement) return;
 
@@ -356,15 +355,15 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
 
-      const timeLeft = expiryDate - now;
+      const timeLeft = expiry - now;
       const hoursLeft = Math.floor(timeLeft / (1000 * 60 * 60));
       const minutesLeft = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
       const secondsLeft = Math.floor((timeLeft % (1000 * 60)) / 1000);
-      timerElement.textContent = translations[currentLang].keyTimer.replace('{timeLeft}', `${hours}h ${minutesLeft}m ${secondsLeft}s`);
-    };;
+      timerElement.textContent = translations[currentLang].keyTimer.replace('{time}', `${hoursLeft}h ${minutesLeft}m ${secondsLeft}s`);
+    };
 
-    update();
-    const timerInterval = setInterval(update, 1000);
+    timerUpdate();
+    const timerInterval = setInterval(timerUpdate, 1000);
   }
 
   function handleLogin() {
@@ -377,41 +376,41 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const username = usernameInput.value.trim();
-    const password = passwordInput;
+    const password = passwordInput.value.trim();
 
     if (!username || !password) {
       showNotification(translations[currentLang].emptyCredentials, 'error');
       return;
     }
 
-    const accountsList = getAccounts();
+    const accounts = getAccounts();
     const userAccount = accounts.find(acc => acc.username === username && acc.password === password);
 
-    if (!account) {
+    if (!userAccount) {
       showNotification(translations[currentLang].invalidCredentials, 'error');
       usernameInput.value = '';
       passwordInput.value = '';
       return;
     }
 
-    if (account.locked || (!account.isAdmin && account.expiry && Date.now() >= account.expiry)) {
+    if (userAccount.locked || (!userAccount.isAdmin && userAccount.expiry && Date.now() >= userAccount.expiry)) {
       showNotification(translations[currentLang].keyExpired, 'error');
       usernameInput.value = '';
       passwordInput.value = '';
       return;
     }
 
-    currentUser = account;
+    currentUser = userAccount;
     localStorage.setItem('currentUser', JSON.stringify({ username, password }));
     document.getElementById('login-container').style.display = 'none';
     document.getElementById('main-container').style.display = 'block';
-    document.getElementById('manage-button').style.display = account.isAdmin ? 'inline-block' : 'none';
-    document.getElementById('key-timer-user').style.display = account.isAdmin ? 'none' : 'block';
+    document.getElementById('manage-button').style.display = userAccount.isAdmin ? 'inline-block' : 'none';
+    document.getElementById('key-timer-user').style.display = userAccount.isAdmin ? 'none' : 'block';
     showNotification(translations[currentLang].loginSuccess, 'success');
     usernameInput.value = '';
     passwordInput.value = '';
-    if (!account.isAdmin) {
-      updateKeyTimer(account.expiry);
+    if (!userAccount.isAdmin) {
+      updateKeyTimer(userAccount.expiry);
     }
   }
 
