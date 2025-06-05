@@ -61,7 +61,8 @@ document.addEventListener('DOMContentLoaded', () => {
       passwordPlaceholder: 'Nhập mật khẩu',
       loginButton: 'Đăng Nhập',
       keyTimer: 'Thời gian còn lại: {time}',
-      keyExpired: 'Tài khoản của bạn đã hết thời gian sử dụng hoặc bị khóa!',
+      keyExpired: 'Tài khoản của bạn đã hết thời gian sử dụng!',
+      accountLocked: 'Tài khoản của bạn đã bị khóa!',
       invalidCredentials: 'Tên đăng nhập hoặc mật khẩu không đúng!',
       loginSuccess: 'Đăng nhập thành công!',
       emptyCredentials: 'Vui lòng nhập đầy đủ tên đăng nhập và mật khẩu!',
@@ -351,7 +352,13 @@ document.addEventListener('DOMContentLoaded', () => {
         loginContainer.style.display = 'block';
         mainContainer.style.display = 'none';
         keyTimerElement.textContent = '';
-      } else if (account.locked || (!account.isAdmin && account.expiry && Date.now() >= account.expiry)) {
+      } else if (account.locked) {
+        localStorage.removeItem('currentUser');
+        showNotification(translations[currentLang].accountLocked, 'error');
+        loginContainer.style.display = 'block';
+        mainContainer.style.display = 'none';
+        keyTimerElement.textContent = translations[currentLang].accountLocked;
+      } else if (!account.isAdmin && account.expiry && Date.now() >= account.expiry) {
         localStorage.removeItem('currentUser');
         showNotification(translations[currentLang].keyExpired, 'error');
         loginContainer.style.display = 'block';
@@ -420,7 +427,14 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    if (userAccount.locked || (!userAccount.isAdmin && userAccount.expiry && Date.now() >= userAccount.expiry)) {
+    if (userAccount.locked) {
+      showNotification(translations[currentLang].accountLocked, 'error');
+      usernameInput.value = '';
+      passwordInput.value = '';
+      return;
+    }
+
+    if (!userAccount.isAdmin && userAccount.expiry && Date.now() >= userAccount.expiry) {
       showNotification(translations[currentLang].keyExpired, 'error');
       usernameInput.value = '';
       passwordInput.value = '';
