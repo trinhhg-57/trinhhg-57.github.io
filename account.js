@@ -20,7 +20,7 @@ const initialAccounts = [
     username: "user2",
     password: "password2",
     isAdmin: false,
-    locked: true, // Tài khoản này bị khóa để kiểm tra
+    locked: false, // Tài khoản này bị khóa để kiểm tra
     expiry: Date.now() + 48 * 60 * 60 * 1000 // Hết hạn sau 48 giờ
   }
 ];
