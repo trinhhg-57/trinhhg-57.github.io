@@ -335,7 +335,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let accounts;
     try {
-      accounts = getAccounts(); // Lấy dữ liệu mới từ account.js
+      accounts = getAccounts();
     } catch (e) {
       console.error('Failed to load accounts:', e);
       showNotification(translations[currentLang].resourceError, 'error');
@@ -372,6 +372,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  // Dòng 375: Export function updateKeyTimer
   export function updateKeyTimer(expiry, timerElement) {
     if (!timerElement) {
       showNotification(translations[currentLang].resourceError, 'error');
