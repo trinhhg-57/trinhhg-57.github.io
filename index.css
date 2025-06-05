@@ -27,6 +27,21 @@ body {
   text-align: center;
 }
 
+#renew-account {
+  text-align: center;
+  margin-bottom: 15px;
+  font-size: 14px;
+}
+
+#renew-account a {
+  color: #007bff;
+  text-decoration: none;
+}
+
+#renew-account a:hover {
+  text-decoration: underline;
+}
+
 .form-group {
   margin-bottom: 12px;
 }
@@ -400,8 +415,11 @@ textarea {
     flex-direction: column;
   }
 
-  .action-buttons button {
-    width: 100%;
+  .action-buttons {
+    flex-direction: wrap;
+    button {
+      width: 100%;
+    }
   }
 
   .punctuation-item {
@@ -412,7 +430,16 @@ textarea {
     width: 100%;
   }
 
-  .replace-container, .split-container {
+  .replace-container {
+    flex-direction: column;
+  }
+
+  .input-section, .split-container {
+    flex-direction: column;
+    min-width: wrap;
+  }
+
+  .split-container {
     flex-direction: column;
   }
 
@@ -425,9 +452,10 @@ textarea {
     font-size: 12px;
   }
 
-  #notification-container {
+  .notification-container {
     top: 5px;
     right: 5px;
+    position: fixed;
   }
 
   .notification {
