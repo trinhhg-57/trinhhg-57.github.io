@@ -64,7 +64,8 @@ document.addEventListener('DOMContentLoaded', () => {
       keyExpired: 'Tài khoản của bạn đã hết thời gian sử dụng hãy gia hạn thêm!',
       invalidCredentials: 'Tên đăng nhập hoặc mật khẩu không đúng!',
       loginSuccess: 'Đăng nhập thành công!',
-      emptyCredentials: 'Vui lòng nhập đầy đủ tên đăng nhập và mật khẩu!'
+      emptyCredentials: 'Vui lòng nhập đầy đủ tên đăng nhập và mật khẩu!',
+      resourceError: 'Không thể tải tài nguyên, vui lòng làm mới trang hoặc kiểm tra kết nối!'
     }
   };
 
@@ -225,7 +226,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function loadModes() {
     const modeSelect = document.getElementById('mode-select');
-    if (!modeSelect) return;
+    if (!modeSelect) {
+      showNotification(translations[currentLang].resourceError, 'error');
+      return;
+    }
 
     let settings;
     try {
@@ -234,8 +238,8 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch (e) {
       console.error('Invalid JSON in localStorage, resetting to default:', e);
       settings = { modes: { default: { pairs: [], matchCase: false } } };
-      localStorage.removeItem(LOCAL_STORAGE_KEY); // Xóa dữ liệu lỗi
-      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(settings)); // Lưu lại giá trị mặc định
+      localStorage.removeItem(LOCAL_STORAGE_KEY);
+      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(settings));
     }
     const modes = Object.keys(settings.modes || { default: [] });
 
@@ -259,8 +263,8 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch (e) {
       console.error('Invalid JSON in localStorage, resetting to default:', e);
       settings = { modes: { default: { pairs: [], matchCase: false } } };
-      localStorage.removeItem(LOCAL_STORAGE_KEY); // Xóa dữ liệu lỗi
-      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(settings)); // Lưu lại giá trị mặc định
+      localStorage.removeItem(LOCAL_STORAGE_KEY);
+      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(settings));
     }
     const modeSettings = settings.modes?.[currentMode] || { pairs: [], matchCase: false };
     const listItems = document.getElementById('punctuation-list');
@@ -280,7 +284,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function addPair(find = '', replace = '') {
     const list = document.getElementById('punctuation-list');
-    if (!list) return;
+    if (!list) {
+      showNotification(translations[currentLang].resourceError, 'error');
+      return;
+    }
 
     const item = document.createElement('div');
     item.className = 'punctuation-item';
@@ -322,13 +329,25 @@ document.addEventListener('DOMContentLoaded', () => {
     const user = JSON.parse(localStorage.getItem('currentUser') || '{}');
     const loginContainer = document.getElementById('login-container');
     const mainContainer = document.getElementById('main-container');
-    if (!loginContainer || !mainContainer) return;
+    if (!loginContainer || !mainContainer) {
+      showNotification(translations[currentLang].resourceError, 'error');
+      return;
+    }
 
-    const accounts = getAccounts();
+    let accounts;
+    try {
+      accounts = getAccounts(); // Lấy dữ liệu mới từ account.js
+    } catch (e) {
+      console.error('Failed to load accounts:', e);
+      showNotification(translations[currentLang].resourceError, 'error');
+      return;
+    }
+
     if (user && user.username && user.password) {
       console.log('Found user in localStorage:', user);
       const account = accounts.find(acc => acc.username === user.username && acc.password === user.password);
       if (account) {
+        // Kiểm tra lại locked từ account.js ngay cả khi đã đăng nhập
         if (account.locked || (!account.isAdmin && account.expiry && Date.now() >= account.expiry)) {
           showNotification(translations[currentLang].keyExpired, 'error');
           localStorage.removeItem('currentUser');
@@ -359,7 +378,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function updateKeyTimer(expiry) {
     const timerElement = document.getElementById('key-timer-user');
-    if (!timerElement) return;
+    if (!timerElement) {
+      showNotification(translations[currentLang].resourceError, 'error');
+      return;
+    }
 
     const timerUpdate = () => {
       const now = Date.now();
@@ -388,7 +410,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const usernameInput = document.getElementById('username');
     const passwordInput = document.getElementById('password');
     if (!usernameInput || !passwordInput) {
-      showNotification('System error, please try again!', 'error');
+      showNotification(translations[currentLang].resourceError, 'error');
       return;
     }
 
@@ -400,7 +422,15 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    const accounts = getAccounts();
+    let accounts;
+    try {
+      accounts = getAccounts();
+    } catch (e) {
+      console.error('Failed to load accounts:', e);
+      showNotification(translations[currentLang].resourceError, 'error');
+      return;
+    }
+
     const userAccount = accounts.find(acc => acc.username === username && acc.password === password);
 
     if (!userAccount) {
@@ -825,6 +855,11 @@ document.addEventListener('DOMContentLoaded', () => {
   function escapeRegExp(string) {
     return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   }
+
+  window.addEventListener('error', (event) => {
+    console.error('Resource loading error:', event.message);
+    showNotification(translations[currentLang].resourceError, 'error');
+  });
 
   window.addEventListener('storage', (event) => {
     if (event.key === ACCOUNTS_STORAGE_KEY) {
