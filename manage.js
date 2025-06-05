@@ -1,5 +1,6 @@
 // manage.js
 import { getAccounts, updateAccount } from './account.js';
+import { updateKeyTimer } from './index.js'; // Import hàm updateKeyTimer từ index.js
 
 document.addEventListener('DOMContentLoaded', () => {
   console.log('Manage DOM fully loaded');
@@ -11,7 +12,9 @@ document.addEventListener('DOMContentLoaded', () => {
       activateAccount: 'Kích hoạt',
       adminAccount: 'Tài khoản admin không có thời hạn',
       accountLocked: 'Tài khoản đã bị khóa!',
-      accountActivated: 'Tài khoản đã được kích hoạt!'
+      accountActivated: 'Tài khoản đã được kích hoạt!',
+      keyTimer: 'Thời gian còn lại: {time}',
+      keyExpired: 'Hết hạn'
     }
   };
 
@@ -67,15 +70,11 @@ document.addEventListener('DOMContentLoaded', () => {
       } else if (account.locked) {
         expiryCell.textContent = 'Đã khóa';
       } else if (account.expiry) {
-        const timeLeft = account.expiry - Date.now();
-        if (timeLeft > 0) {
-          const hours = Math.floor(timeLeft / (1000 * 60 * 60));
-          const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
-          const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
-          expiryCell.textContent = `${hours}h ${minutes}m ${seconds}s`;
-        } else {
-          expiryCell.textContent = 'Hết hạn';
-        }
+        const keyTimerSpan = document.createElement('span');
+        keyTimerSpan.className = 'key-timer';
+        keyTimerSpan.dataset.username = account.username;
+        expiryCell.appendChild(keyTimerSpan);
+        updateKeyTimer(account.expiry, keyTimerSpan); // Sử dụng updateKeyTimer để đồng bộ thời gian
       } else {
         expiryCell.textContent = 'Không có thời hạn';
       }
@@ -144,7 +143,7 @@ document.addEventListener('DOMContentLoaded', () => {
   try {
     updateLanguage('vn');
     updateAccountList();
-    setInterval(updateAccountList, 1000); // Cập nhật mỗi giây để hiển thị thời gian chính xác
+    // Không cần setInterval vì updateKeyTimer đã tự động cập nhật mỗi giây
   } catch (error) {
     console.error('Error in manage.js:', error);
     showNotification('Có lỗi khi khởi tạo trang quản lý!', 'error');
