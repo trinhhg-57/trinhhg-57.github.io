@@ -1,5 +1,5 @@
 // manage.js
-import { getAccounts, updateAccount, syncLockedStates } from './account.js';
+import { getAccounts, updateAccount, syncLockedStates, resetAccounts } from './account.js';
 
 document.addEventListener('DOMContentLoaded', () => {
   console.log('Manage DOM fully loaded');
@@ -13,7 +13,8 @@ document.addEventListener('DOMContentLoaded', () => {
       accountLocked: 'Tài khoản đã bị khóa!',
       accountActivated: 'Tài khoản đã được kích hoạt!',
       keyTimer: 'Thời gian còn lại: {time}',
-      keyExpired: 'Hết hạn'
+      keyExpired: 'Hết hạn',
+      accountsReset: 'Đã reset danh sách tài khoản!'
     }
   };
 
@@ -24,6 +25,8 @@ document.addEventListener('DOMContentLoaded', () => {
     currentLang = lang;
     document.documentElement.lang = lang;
     document.getElementById('app-title').textContent = translations[lang].appTitle;
+    const resetAccountsButton = document.getElementById('reset-accounts-button');
+    if (resetAccountsButton) resetAccountsButton.textContent = translations[lang].resetAccountsButton;
   }
 
   function showNotification(message, type = 'success') {
@@ -42,8 +45,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function updateAccountList() {
     console.log('Updating account list...');
-    syncLockedStates(); // Đồng bộ trước khi hiển thị danh sách
-
     const accountList = document.getElementById('account-list');
     if (!accountList) return;
 
@@ -101,7 +102,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const handleLock = () => {
         updateAccount(account.username, { locked: true });
-        syncLockedStates();
         localStorage.setItem(ACCOUNTS_STORAGE_KEY, JSON.stringify(getAccounts()));
         const currentUser = JSON.parse(localStorage.getItem('currentUser'));
         if (currentUser && currentUser.username === account.username) {
@@ -115,7 +115,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const handleActivate = () => {
         updateAccount(account.username, { locked: false });
-        syncLockedStates();
         localStorage.setItem(ACCOUNTS_STORAGE_KEY, JSON.stringify(getAccounts()));
         showNotification(translations[currentLang].accountActivated, 'success');
         updateAccountList();
@@ -146,8 +145,25 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // Gắn sự kiện cho nút Reset Accounts
+  const resetAccountsButton = document.getElementById('reset-accounts-button');
+  if (resetAccountsButton) {
+    resetAccountsButton.addEventListener('click', () => {
+      resetAccounts();
+      updateAccountList();
+      showNotification(translations[currentLang].accountsReset, 'success');
+    });
+  }
+
+  // Đồng bộ giữa các tab
+  window.addEventListener('storage', (event) => {
+    if (event.key === 'accounts') {
+      console.log('Accounts updated in another tab, updating list...');
+      updateAccountList();
+    }
+  });
+
   try {
-    syncLockedStates();
     updateLanguage('vn');
     updateAccountList();
   } catch (error) {
