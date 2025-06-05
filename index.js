@@ -436,8 +436,18 @@ document.addEventListener('DOMContentLoaded', () => {
       loginButton: document.getElementById('login-button')
     };
 
+    const addMobileEvent = (element, callback) => {
+      if (element) {
+        element.addEventListener('click', callback);
+        element.addEventListener('touchstart', (e) => {
+          e.preventDefault();
+          callback(e);
+        }, { passive: false });
+      }
+    };
+
     if (buttons.matchCaseButton) {
-      buttons.matchCaseButton.addEventListener('click', () => {
+      addMobileEvent(buttons.matchCaseButton, () => {
         matchCaseEnabled = !matchCaseEnabled;
         updateButtonStates();
         saveSettings();
@@ -445,7 +455,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (buttons.deleteModeButton) {
-      buttons.deleteModeButton.addEventListener('click', () => {
+      addMobileEvent(buttons.deleteModeButton, () => {
         if (currentMode !== 'default' && confirm(`Bạn có chắc chắn muốn xóa chế độ "${currentMode}"?`)) {
           const settings = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY)) || { modes: { default: { pairs: [], matchCase: false } } };
           if (settings.modes[currentMode]) {
@@ -460,7 +470,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (buttons.renameModeButton) {
-      buttons.renameModeButton.addEventListener('click', () => {
+      addMobileEvent(buttons.renameModeButton, () => {
         const newName = prompt(translations[currentLang].renamePrompt);
         if (newName && !newName.includes('mode_') && newName.trim() !== '' && newName !== currentMode) {
           const settings = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY)) || { modes: { default: { pairs: [], matchCase: false } } };
@@ -479,7 +489,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (buttons.addModeButton) {
-      buttons.addModeButton.addEventListener('click', () => {
+      addMobileEvent(buttons.addModeButton, () => {
         const newMode = prompt(translations[currentLang].newModePrompt);
         if (newMode && !newMode.includes('mode_') && newMode.trim() !== '' && newMode !== 'default') {
           const settings = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY)) || { modes: { default: { pairs: [], matchCase: false } } };
@@ -499,7 +509,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (buttons.copyModeButton) {
-      buttons.copyModeButton.addEventListener('click', () => {
+      addMobileEvent(buttons.copyModeButton, () => {
         const newMode = prompt(translations[currentLang].newModePrompt);
         if (newMode && !newMode.includes('mode_') && newMode.trim() !== '' && newMode !== 'default') {
           const settings = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY)) || { modes: { default: { pairs: [], matchCase: false } } };
@@ -528,19 +538,19 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (buttons.addPairButton) {
-      buttons.addPairButton.addEventListener('click', () => addPair('', ''));
+      addMobileEvent(buttons.addPairButton, () => addPair('', ''));
     }
 
     if (buttons.saveSettingsButton) {
-      buttons.saveSettingsButton.addEventListener('click', () => saveSettings());
+      addMobileEvent(buttons.saveSettingsButton, () => saveSettings());
     }
 
     if (buttons.manageButton) {
-      buttons.manageButton.addEventListener('click', () => window.open('manage.html', '_blank'));
+      addMobileEvent(buttons.manageButton, () => window.open('manage.html', '_blank'));
     }
 
     if (buttons.replaceButton) {
-      buttons.replaceButton.addEventListener('click', () => {
+      addMobileEvent(buttons.replaceButton, () => {
         const inputTextArea = document.getElementById('input-text');
         if (!inputTextArea || !inputTextArea.value) {
           showNotification(translations[currentLang].noTextToReplace, 'error');
@@ -616,7 +626,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (buttons.copyButton) {
-      buttons.copyButton.addEventListener('click', () => {
+      addMobileEvent(buttons.copyButton, () => {
         const outputTextArea = document.getElementById('output-text');
         if (outputTextArea && outputTextArea.value) {
           navigator.clipboard.writeText(outputTextArea.value).then(() => {
@@ -631,7 +641,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (buttons.splitButton) {
-      buttons.splitButton.addEventListener('click', () => {
+      addMobileEvent(buttons.splitButton, () => {
         const inputTextArea = document.getElementById('split-input-text');
         const output1TextArea = document.getElementById('output1-text');
         const output2TextArea = document.getElementById('output2-text');
@@ -680,7 +690,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (buttons.copyButton1) {
-      buttons.copyButton1.addEventListener('click', () => {
+      addMobileEvent(buttons.copyButton1, () => {
         const output1TextArea = document.getElementById('output1-text');
         if (output1TextArea && output1TextArea.value) {
           navigator.clipboard.writeText(output1TextArea.value).then(() => {
@@ -695,7 +705,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (buttons.copyButton2) {
-      buttons.copyButton2.addEventListener('click', () => {
+      addMobileEvent(buttons.copyButton2, () => {
         const output2TextArea = document.getElementById('output2-text');
         if (output2TextArea && output2TextArea.value) {
           navigator.clipboard.writeText(output2TextArea.value).then(() => {
@@ -710,7 +720,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (buttons.exportSettingsButton) {
-      buttons.exportSettingsButton.addEventListener('click', () => {
+      addMobileEvent(buttons.exportSettingsButton, () => {
         const settings = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY)) || { modes: { default: { pairs: [], matchCase: false } } };
         const blob = new Blob([JSON.stringify(settings, null, 2)], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
@@ -724,7 +734,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (buttons.importSettingsButton) {
-      buttons.importSettingsButton.addEventListener('click', () => {
+      addMobileEvent(buttons.importSettingsButton, () => {
         const input = document.createElement('input');
         input.type = 'file';
         input.accept = '.json';
@@ -751,7 +761,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (buttons.loginButton) {
       console.log('Attaching event to login button');
-      buttons.loginButton.addEventListener('click', handleLogin);
+      addMobileEvent(buttons.loginButton, handleLogin);
     } else {
       console.error('Login button not found');
     }
@@ -788,6 +798,10 @@ document.addEventListener('DOMContentLoaded', () => {
         button.classList.add('active');
       };
       button.addEventListener('click', handler);
+      button.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        handler();
+      }, { passive: false });
     });
   }
 
