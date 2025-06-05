@@ -12,7 +12,7 @@ body {
 }
 
 .container {
-  max-width: 90vw;
+  max-width: 800px;
   width: 100%;
   margin: 0 auto;
   background: white;
@@ -282,19 +282,21 @@ textarea {
 .replace-container {
   display: flex;
   gap: 15px;
-  flex-wrap: wrap;
+  flex-direction: row;
+  flex-wrap: nowrap;
 }
 
 .split-container {
   display: flex;
   gap: 10px;
-  flex-wrap: wrap;
+  flex-direction: row;
+  flex-wrap: nowrap;
   align-items: stretch;
 }
 
 .input-section, .output-section {
   flex: 1;
-  min-width: 100%;
+  min-width: 0;
 }
 
 #split-input-text, #output1-text, #output2-text {
@@ -377,7 +379,7 @@ textarea {
 }
 
 /* Media Queries cho Mobile */
-@media (max-width: 768px) {
+@media (max-width: 800px) {
   .container {
     padding: 10px;
     max-width: 100%;
@@ -427,11 +429,7 @@ textarea {
     width: 100%;
   }
 
-  .replace-container {
-    flex-direction: column;
-  }
-
-  .input-section, .split-container {
+  .replace-container, .split-container {
     flex-direction: column;
   }
 
