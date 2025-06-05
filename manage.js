@@ -1,5 +1,5 @@
 // manage.js
-import { getAccounts, updateAccount } from './account.js';
+import { getAccounts, updateAccount, syncLockedStates } from './account.js';
 
 document.addEventListener('DOMContentLoaded', () => {
   console.log('Manage DOM fully loaded');
@@ -97,6 +97,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const handleLock = () => {
         updateAccount(account.username, { locked: true });
+        syncLockedStates(); // Đồng bộ sau khi khóa
         localStorage.setItem(ACCOUNTS_STORAGE_KEY, JSON.stringify(getAccounts()));
         const currentUser = JSON.parse(localStorage.getItem('currentUser'));
         if (currentUser && currentUser.username === account.username) {
@@ -110,6 +111,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const handleActivate = () => {
         updateAccount(account.username, { locked: false });
+        syncLockedStates(); // Đồng bộ sau khi kích hoạt
         localStorage.setItem(ACCOUNTS_STORAGE_KEY, JSON.stringify(getAccounts()));
         showNotification(translations[currentLang].accountActivated, 'success');
         updateAccountList();
@@ -141,6 +143,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   try {
+    syncLockedStates(); // Đồng bộ trạng thái locked khi tải trang
     updateLanguage('vn');
     updateAccountList();
   } catch (error) {
