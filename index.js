@@ -65,8 +65,7 @@ document.addEventListener('DOMContentLoaded', () => {
       invalidCredentials: 'Tên đăng nhập hoặc mật khẩu không đúng!',
       loginSuccess: 'Đăng nhập thành công!',
       emptyCredentials: 'Vui lòng nhập đầy đủ tên đăng nhập và mật khẩu!',
-      resourceError: 'Không thể tải tài nguyên, vui lòng làm mới trang hoặc kiểm tra kết nối!',
-      sessionTaken: 'Tài khoản đã được sử dụng trên thiết bị khác, vui lòng thử lại sau khi tài khoản được mở khóa!'
+      resourceError: 'Không thể tải tài nguyên, vui lòng làm mới trang hoặc kiểm tra kết nối!'
     }
   };
 
@@ -75,8 +74,6 @@ document.addEventListener('DOMContentLoaded', () => {
   let currentMode = 'default';
   let currentUser = null;
   const LOCAL_STORAGE_KEY = 'local_settings';
-  const SESSION_KEY = 'active_sessions'; // Lưu trạng thái phiên
-  const ACCOUNTS_STORAGE_KEY = 'accounts';
 
   function escapeHtml(str) {
     try {
@@ -326,12 +323,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  function generateDeviceId() {
-    const userAgent = navigator.userAgent;
-    const timestamp = Date.now();
-    return `${userAgent}-${timestamp}`;
-  }
-
   function checkLoginStatus() {
     console.log('Checking login status...');
     const user = JSON.parse(localStorage.getItem('currentUser') || '{}');
@@ -351,34 +342,20 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    const activeSessions = JSON.parse(localStorage.getItem(SESSION_KEY) || '{}');
-    const deviceId = generateDeviceId();
-
     if (user && user.username && user.password) {
       console.log('Found user in localStorage:', user);
       const account = accounts.find(acc => acc.username === user.username && acc.password === user.password);
       if (!account) {
         localStorage.removeItem('currentUser');
-        delete activeSessions[user.username];
-        localStorage.setItem(SESSION_KEY, JSON.stringify(activeSessions));
         loginContainer.style.display = 'block';
         mainContainer.style.display = 'none';
       } else if (account.locked || (!account.isAdmin && account.expiry && Date.now() >= account.expiry)) {
         localStorage.removeItem('currentUser');
-        delete activeSessions[user.username]; // Xóa session khi khóa
-        localStorage.setItem(SESSION_KEY, JSON.stringify(activeSessions));
         showNotification(translations[currentLang].keyExpired, 'error');
-        loginContainer.style.display = 'block';
-        mainContainer.style.display = 'none';
-      } else if (activeSessions[user.username] && activeSessions[user.username].deviceId !== deviceId) {
-        showNotification(translations[currentLang].sessionTaken, 'error');
-        localStorage.removeItem('currentUser');
         loginContainer.style.display = 'block';
         mainContainer.style.display = 'none';
       } else {
         currentUser = account;
-        activeSessions[user.username] = { deviceId: deviceId, timestamp: Date.now() };
-        localStorage.setItem(SESSION_KEY, JSON.stringify(activeSessions));
         loginContainer.style.display = 'none';
         mainContainer.style.display = 'block';
         document.getElementById('manage-button').style.display = account.isAdmin ? 'inline-block' : 'none';
@@ -409,9 +386,6 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('main-container').style.display = 'none';
         showNotification(translations[currentLang].keyExpired, 'error');
         localStorage.removeItem('currentUser');
-        const activeSessions = JSON.parse(localStorage.getItem(SESSION_KEY) || '{}');
-        delete activeSessions[currentUser.username];
-        localStorage.setItem(SESSION_KEY, JSON.stringify(activeSessions));
         clearInterval(timerInterval);
         return;
       }
@@ -469,20 +443,8 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    const activeSessions = JSON.parse(localStorage.getItem(SESSION_KEY) || '{}');
-    const deviceId = generateDeviceId();
-
-    if (activeSessions[username]) {
-      showNotification(translations[currentLang].sessionTaken, 'error');
-      usernameInput.value = '';
-      passwordInput.value = '';
-      return;
-    }
-
     currentUser = userAccount;
     localStorage.setItem('currentUser', JSON.stringify({ username, password }));
-    activeSessions[username] = { deviceId: deviceId, timestamp: Date.now() };
-    localStorage.setItem(SESSION_KEY, JSON.stringify(activeSessions));
     document.getElementById('login-container').style.display = 'none';
     document.getElementById('main-container').style.display = 'block';
     document.getElementById('manage-button').style.display = userAccount.isAdmin ? 'inline-block' : 'none';
@@ -896,7 +858,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   window.addEventListener('storage', (event) => {
-    if (event.key === SESSION_KEY || event.key === ACCOUNTS_STORAGE_KEY) {
+    if (event.key === 'currentUser') {
       checkLoginStatus();
     }
   });
