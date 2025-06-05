@@ -83,7 +83,7 @@ document.addEventListener('DOMContentLoaded', () => {
         '<': '<',
         '>': '>',
         '"': '"',
-        "'": '&apos;' // Sửa lỗi cú pháp, dùng thực thể HTML
+        "'": ''' // Sửa lỗi cú pháp, dùng thực thể HTML
       }[match] || match));
     } catch (error) {
       console.error('Error in escapeHtml:', error);
@@ -214,7 +214,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const notification = document.createElement('div');
-    notification.className = `notification ${level}`;
+    notification.className = `notification ${level}`; // Sửa lỗi cú pháp, dùng backtick
     notification.textContent = message;
     container.appendChild(notification);
 
