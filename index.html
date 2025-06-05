@@ -52,11 +52,17 @@
         <select id="mode-select">
           <option value="default">Mặc định</option>
         </select>
-        <button id="add-mode">Thêm chế độ mới</button>
-        <button id="copy-mode">Sao Chép Chế Độ</button>
-        <button id="match-case" class="match-case-button">Match Case: Tắt</button>
-        <button id="export-settings">Xuất Cài Đặt</button>
-        <button id="import-settings">Nhập Cài Đặt</button>
+        <!-- Hàng 1: Thêm chế độ, Sao Chép Chế Độ, Match Case -->
+        <div class="mode-button-row-1">
+          <button id="add-mode">Thêm chế độ mới</button>
+          <button id="copy-mode">Sao Chép Chế Độ</button>
+          <button id="match-case" class="match-case-button">Match Case: Tắt</button>
+        </div>
+        <!-- Hàng 2: Xuất Cài Đặt, Nhập Cài Đặt -->
+        <div class="mode-button-row-2">
+          <button id="export-settings">Xuất Cài Đặt</button>
+          <button id="import-settings">Nhập Cài Đặt</button>
+        </div>
         <button id="rename-mode" class="rename-mode-button" style="display: none;">Đổi Tên</button>
         <button id="delete-mode" class="delete-mode-button" style="display: none;">Xóa Chế Độ</button>
         <button id="manage-button" style="display: none;">Quản lý</button>
