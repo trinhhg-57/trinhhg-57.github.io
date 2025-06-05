@@ -27,7 +27,7 @@ const initialAccounts = [
     username: "user3",
     password: "password3",
     isAdmin: false,
-    locked: false,
+    locked: true,
     expiry: Date.now() + 2 * 60 * 60 * 1000 // Hết hạn sau 2 giờ
   }
 ];
