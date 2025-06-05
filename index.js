@@ -83,7 +83,7 @@ document.addEventListener('DOMContentLoaded', () => {
         '<': '<',
         '>': '>',
         '"': '"',
-        "'": '&apos;' // Sử dụng thực thể HTML hợp lệ cho dấu nháy đơn
+        "'": ''' // Sử dụng thực thể HTML hợp lệ cho dấu nháy đơn
       }[match] || match));
     } catch (error) {
       console.error('Error in escapeHtml:', error);
@@ -234,7 +234,8 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch (e) {
       console.error('Invalid JSON in localStorage, resetting to default:', e);
       settings = { modes: { default: { pairs: [], matchCase: false } } };
-      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(settings));
+      localStorage.removeItem(LOCAL_STORAGE_KEY); // Xóa dữ liệu lỗi
+      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(settings)); // Lưu lại giá trị mặc định
     }
     const modes = Object.keys(settings.modes || { default: [] });
 
@@ -258,7 +259,8 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch (e) {
       console.error('Invalid JSON in localStorage, resetting to default:', e);
       settings = { modes: { default: { pairs: [], matchCase: false } } };
-      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(settings));
+      localStorage.removeItem(LOCAL_STORAGE_KEY); // Xóa dữ liệu lỗi
+      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(settings)); // Lưu lại giá trị mặc định
     }
     const modeSettings = settings.modes?.[currentMode] || { pairs: [], matchCase: false };
     const listItems = document.getElementById('punctuation-list');
@@ -322,14 +324,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const mainContainer = document.getElementById('main-container');
     if (!loginContainer || !mainContainer) return;
 
-    const accounts = getAccounts(); // Lấy dữ liệu mới từ account.js
+    const accounts = getAccounts();
     if (user && user.username && user.password) {
       console.log('Found user in localStorage:', user);
       const account = accounts.find(acc => acc.username === user.username && acc.password === user.password);
       if (account) {
         if (account.locked || (!account.isAdmin && account.expiry && Date.now() >= account.expiry)) {
           showNotification(translations[currentLang].keyExpired, 'error');
-          localStorage.removeItem('currentUser'); // Xóa trạng thái cũ nếu khóa hoặc hết hạn
+          localStorage.removeItem('currentUser');
           loginContainer.style.display = 'block';
           mainContainer.style.display = 'none';
         } else {
@@ -345,7 +347,7 @@ document.addEventListener('DOMContentLoaded', () => {
           }
         }
       } else {
-        localStorage.removeItem('currentUser'); // Xóa nếu tài khoản không khớp
+        localStorage.removeItem('currentUser');
         loginContainer.style.display = 'block';
         mainContainer.style.display = 'none';
       }
