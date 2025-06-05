@@ -169,6 +169,7 @@ h2 {
   flex: 1;
 }
 
+/* Điều chỉnh nút theo yêu cầu mobile */
 .match-case-button, .rename-mode-button, .delete-mode-button, #add-mode, #copy-mode, #export-settings, #import-settings, #manage-button {
   padding: 6px 8px;
   background: #6c757d;
@@ -196,6 +197,48 @@ h2 {
 
 #add-mode:hover, #copy-mode:hover, #export-settings:hover, #import-settings:hover, #manage-button:hover {
   background: #0056b3;
+}
+
+/* Điều chỉnh bố cục nút trên mobile */
+@media (max-width: 800px) {
+  .mode-controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  #mode-select {
+    width: 100%;
+    margin-bottom: 10px;
+  }
+
+  /* Hàng 1: Thêm chế độ, Sao Chép Chế Độ, Match Case */
+  .mode-button-row-1 {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+
+  #add-mode, #copy-mode, .match-case-button {
+    flex: 1;
+    width: fit-content;
+    margin-right: 5px;
+    font-size: 11px;
+    padding: 5px;
+  }
+
+  /* Hàng 2: Xuất Cài Đặt, Nhập Cài Đặt */
+  .mode-button-row-2 {
+    display: flex;
+    justify-content: space-between;
+  }
+
+  #export-settings, #import-settings {
+    flex: 1;
+    width: fit-content;
+    margin-right: 5px;
+    font-size: 11px;
+    padding: 5px;
+  }
 }
 
 .action-buttons {
@@ -415,14 +458,34 @@ textarea {
 
   #mode-select {
     width: 100%;
-    margin-bottom: 5px;
+    margin-bottom: 10px;
   }
 
-  .mode-controls button {
-    flex: 0 0 22%; /* Ngắn bằng ~1/4 chiều rộng, trừ đi khoảng cách gap */
-    margin-bottom: 5px;
+  .mode-button-row-1 {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+
+  #add-mode, #copy-mode, .match-case-button {
+    flex: 1;
+    width: fit-content;
+    margin-right: 5px;
     font-size: 11px;
-    padding: 5px 2px;
+    padding: 5px;
+  }
+
+  .mode-button-row-2 {
+    display: flex;
+    justify-content: space-between;
+  }
+
+  #export-settings, #import-settings {
+    flex: 1;
+    width: fit-content;
+    margin-right: 5px;
+    font-size: 11px;
+    padding: 5px;
   }
 
   .action-buttons {
