@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quản Lý - Tiện Ích Của Trịnh Hg</title>
+  <link rel="stylesheet" href="manage.css">
+</head>
+<body>
+  <div class="container">
+    <h1 id="app-title">Quản Lý - Tiện Ích Của Trịnh Hg</h1>
+    <div class="manage-form">
+      <h2 id="manage-title">Quản Lý Tài Khoản</h2>
+      <table id="account-table" style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+        <thead>
+          <tr>
+            <th style="border: 1px solid #ccc; padding: 8px;">Tên đăng nhập</th>
+            <th style="border: 1px solid #ccc; padding: 8px;">Thời gian còn lại</th>
+            <th style="border: 1px solid #ccc; padding: 8px;">Hành động</th>
+          </tr>
+        </thead>
+        <tbody id="account-list"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div id="notification-container"></div>
+
+  <script type="module" src="manage.js"></script>
+</body>
+</html>
