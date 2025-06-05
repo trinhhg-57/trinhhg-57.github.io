@@ -79,11 +79,11 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       if (typeof str !== 'string') return '';
       return str.replace(/[&<>"']/g, match => ({
-        '&': '&amp;',
-        '<': '&lt;',
-        '>': '&gt;',
-        '"': '&quot;',
-        "'": '&apos;' // Sửa lỗi cú pháp, dùng thực thể HTML &apos;
+        '&': '&',
+        '<': '<',
+        '>': '>',
+        '"': '"',
+        "'": '&apos;' // Sử dụng thực thể HTML hợp lệ cho dấu nháy đơn
       }[match] || match));
     } catch (error) {
       console.error('Error in escapeHtml:', error);
@@ -227,7 +227,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const modeSelect = document.getElementById('mode-select');
     if (!modeSelect) return;
 
-    const settings = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY) || '{ "modes": { "default": { "pairs": [], "matchCase": false } }');
+    let settings;
+    try {
+      const storedSettings = localStorage.getItem(LOCAL_STORAGE_KEY);
+      settings = storedSettings ? JSON.parse(storedSettings) : { modes: { default: { pairs: [], matchCase: false } } };
+    } catch (e) {
+      console.error('Invalid JSON in localStorage, resetting to default:', e);
+      settings = { modes: { default: { pairs: [], matchCase: false } } };
+      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(settings));
+    }
     const modes = Object.keys(settings.modes || { default: [] });
 
     modeSelect.innerHTML = '';
@@ -243,7 +251,15 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function loadSettings() {
-    const settings = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY) || '{ "modes": { "default": { "pairs": [], "matchCase": false } }');
+    let settings;
+    try {
+      const storedSettings = localStorage.getItem(LOCAL_STORAGE_KEY);
+      settings = storedSettings ? JSON.parse(storedSettings) : { modes: { default: { pairs: [], matchCase: false } } };
+    } catch (e) {
+      console.error('Invalid JSON in localStorage, resetting to default:', e);
+      settings = { modes: { default: { pairs: [], matchCase: false } } };
+      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(settings));
+    }
     const modeSettings = settings.modes?.[currentMode] || { pairs: [], matchCase: false };
     const listItems = document.getElementById('punctuation-list');
     if (listItems) {
@@ -306,15 +322,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const mainContainer = document.getElementById('main-container');
     if (!loginContainer || !mainContainer) return;
 
+    const accounts = getAccounts(); // Lấy dữ liệu mới từ account.js
     if (user && user.username && user.password) {
-      console.log('Found user:', user);
-      const accounts = getAccounts();
-      console.log('Accounts:', accounts);
+      console.log('Found user in localStorage:', user);
       const account = accounts.find(acc => acc.username === user.username && acc.password === user.password);
       if (account) {
         if (account.locked || (!account.isAdmin && account.expiry && Date.now() >= account.expiry)) {
           showNotification(translations[currentLang].keyExpired, 'error');
-          localStorage.removeItem('currentUser');
+          localStorage.removeItem('currentUser'); // Xóa trạng thái cũ nếu khóa hoặc hết hạn
           loginContainer.style.display = 'block';
           mainContainer.style.display = 'none';
         } else {
@@ -330,7 +345,7 @@ document.addEventListener('DOMContentLoaded', () => {
           }
         }
       } else {
-        localStorage.removeItem('currentUser');
+        localStorage.removeItem('currentUser'); // Xóa nếu tài khoản không khớp
         loginContainer.style.display = 'block';
         mainContainer.style.display = 'none';
       }
