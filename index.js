@@ -297,10 +297,6 @@ document.addEventListener('DOMContentLoaded', () => {
       e.preventDefault();
       item.remove();
     });
-    removeButton.addEventListener('touchstart', (e) => {
-      e.preventDefault();
-      item.remove();
-    });
   }
 
   function checkLoginStatus() {
@@ -318,26 +314,32 @@ document.addEventListener('DOMContentLoaded', () => {
       const accounts = getAccounts();
       console.log('Accounts:', accounts);
       const account = accounts.find(acc => acc.username === user.username && acc.password === user.password);
-      if (account && !account.locked && (account.isAdmin || (account.expiry && Date.now() < account.expiry))) {
-        console.log('Valid account found:', account);
-        currentUser = account;
-        loginContainer.style.display = 'none';
-        mainContainer.style.display = 'block';
-        document.getElementById('manage-button').style.display = account.isAdmin ? 'inline-block' : 'none';
-        if (!account.isAdmin) {
-          document.getElementById('key-timer-user').style.display = 'block';
-          updateKeyTimer(account.expiry);
+      if (account) {
+        console.log('Account found:', account);
+        if (account.locked || (!account.isAdmin && account.expiry && Date.now() >= account.expiry)) {
+          console.log('Account locked or expired');
+          localStorage.removeItem('currentUser');
+          loginContainer.style.display = 'block';
+          mainContainer.style.display = 'none';
+          showNotification(translations[currentLang].keyExpired, 'error');
         } else {
-          document.getElementById('key-timer-user').style.display = 'none';
+          console.log('Valid account, showing main container');
+          currentUser = account;
+          loginContainer.style.display = 'none';
+          mainContainer.style.display = 'block';
+          document.getElementById('manage-button').style.display = account.isAdmin ? 'inline-block' : 'none';
+          if (!account.isAdmin) {
+            document.getElementById('key-timer-user').style.display = 'block';
+            updateKeyTimer(account.expiry);
+          } else {
+            document.getElementById('key-timer-user').style.display = 'none';
+          }
         }
       } else {
-        console.log('Invalid or expired account, clearing currentUser');
+        console.log('Account not found, clearing currentUser');
         localStorage.removeItem('currentUser');
         loginContainer.style.display = 'block';
         mainContainer.style.display = 'none';
-        if (account && (account.locked || (account.expiry && Date.now() >= account.expiry))) {
-          showNotification(translations[currentLang].keyExpired, 'error');
-        }
       }
     } else {
       console.log('No currentUser, showing login container');
@@ -372,8 +374,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const timerInterval = setInterval(update, 1000);
   }
 
-  function handleLogin() {
-    console.log('Login button triggered');
+  function handleLogin(e) {
+    e.preventDefault();
+    console.log('Login button clicked');
     const usernameInput = document.getElementById('username');
     const passwordInput = document.getElementById('password');
     if (!usernameInput || !passwordInput) {
@@ -425,6 +428,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function attachButtonEvents() {
+    console.log('Attaching button events...');
     const buttons = {
       matchCaseButton: document.getElementById('match-case'),
       deleteModeButton: document.getElementById('delete-mode'),
@@ -759,14 +763,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (buttons.loginButton) {
-      buttons.loginButton.addEventListener('click', (e) => {
-        e.preventDefault();
-        handleLogin();
-      });
-      buttons.loginButton.addEventListener('touchstart', (e) => {
-        e.preventDefault();
-        handleLogin();
-      });
+      console.log('Attaching event to login button');
+      buttons.loginButton.addEventListener('click', handleLogin);
+    } else {
+      console.error('Login button not found');
     }
   }
 
@@ -801,10 +801,6 @@ document.addEventListener('DOMContentLoaded', () => {
         button.classList.add('active');
       };
       button.addEventListener('click', handler);
-      button.addEventListener('touchstart', (e) => {
-        e.preventDefault();
-        handler();
-      });
     });
   }
 
