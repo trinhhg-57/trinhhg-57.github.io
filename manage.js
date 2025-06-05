@@ -45,14 +45,13 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!accountList) return;
 
     accountList.innerHTML = '';
-    const accounts = JSON.parse(localStorage.getItem(ACCOUNTS_STORAGE_KEY)) || getAccounts();
+    const accounts = getAccounts();
 
     accounts.forEach(account => {
       const row = document.createElement('tr');
       const accountCell = document.createElement('td');
       const expiryCell = document.createElement('td');
       const actionCell = document.createElement('td');
-      const actionButton = document.createElement('button');
 
       // Hiển thị username và password trong cùng một cột
       const usernameDiv = document.createElement('div');
@@ -85,35 +84,57 @@ document.addEventListener('DOMContentLoaded', () => {
       expiryCell.style.border = '1px solid #ccc';
       expiryCell.style.padding = '8px';
 
-      // Nút khóa/kích hoạt
-      actionButton.textContent = account.locked ? translations[currentLang].activateAccount : translations[currentLang].lockAccount;
-      actionButton.style.padding = '5px 10px';
-      actionButton.style.background = account.locked ? '#28a745' : '#dc3545';
-      actionButton.style.color = 'white';
-      actionButton.style.border = 'none';
-      actionButton.style.cursor = 'pointer';
-      actionButton.addEventListener('click', () => {
-        const newLockedState = !account.locked;
-        updateAccount(account.username, { locked: newLockedState });
-        localStorage.setItem(ACCOUNTS_STORAGE_KEY, JSON.stringify(accounts));
+      // Thêm hai nút Khóa và Kích hoạt
+      const actionButtons = document.createElement('div');
+      actionButtons.className = 'action-buttons';
 
-        // Nếu tài khoản bị khóa là tài khoản hiện tại, đăng xuất
+      const lockButton = document.createElement('button');
+      lockButton.className = 'lock-button';
+      lockButton.textContent = translations[currentLang].lockAccount;
+      lockButton.style.display = account.locked ? 'none' : 'inline-block';
+
+      const activateButton = document.createElement('button');
+      activateButton.className = 'activate-button';
+      activateButton.textContent = translations[currentLang].activateAccount;
+      activateButton.style.display = account.locked ? 'inline-block' : 'none';
+
+      const handleLock = () => {
+        updateAccount(account.username, { locked: true });
+        localStorage.setItem(ACCOUNTS_STORAGE_KEY, JSON.stringify(getAccounts()));
         const currentUser = JSON.parse(localStorage.getItem('currentUser'));
-        if (currentUser && currentUser.username === account.username && newLockedState) {
+        if (currentUser && currentUser.username === account.username) {
           localStorage.removeItem('currentUser');
           showNotification(translations[currentLang].accountLocked, 'success');
-          // Gửi sự kiện storage để các tab khác cập nhật
-          localStorage.setItem(ACCOUNTS_STORAGE_KEY, JSON.stringify(accounts));
         } else {
-          showNotification(newLockedState ? translations[currentLang].accountLocked : translations[currentLang].accountActivated, 'success');
+          showNotification(translations[currentLang].accountLocked, 'success');
         }
-
         updateAccountList();
+      };
+
+      const handleActivate = () => {
+        updateAccount(account.username, { locked: false });
+        localStorage.setItem(ACCOUNTS_STORAGE_KEY, JSON.stringify(getAccounts()));
+        showNotification(translations[currentLang].accountActivated, 'success');
+        updateAccountList();
+      };
+
+      lockButton.addEventListener('click', handleLock);
+      lockButton.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        handleLock();
       });
 
+      activateButton.addEventListener('click', handleActivate);
+      activateButton.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        handleActivate();
+      });
+
+      actionButtons.appendChild(lockButton);
+      actionButtons.appendChild(activateButton);
+      actionCell.appendChild(actionButtons);
       actionCell.style.border = '1px solid #ccc';
       actionCell.style.padding = '8px';
-      actionCell.appendChild(actionButton);
 
       row.appendChild(accountCell);
       row.appendChild(expiryCell);
