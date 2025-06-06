@@ -1,5 +1,5 @@
 // index.js
-import { getAccounts, updateAccount, syncLockedStates } from './account.js?v=4'; // Thêm version để ép tải lại
+import { getAccounts, updateAccount, syncLockedStates } from './account.js?v=5'; // Thêm version để ép tải lại
 
 document.addEventListener('DOMContentLoaded', () => {
   console.log('DOM fully loaded');
