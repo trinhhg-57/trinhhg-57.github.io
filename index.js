@@ -1,5 +1,5 @@
 // index.js
-import { getAccounts, updateAccount, syncLockedStates } from './account.js';
+import { getAccounts, updateAccount, syncLockedStates } from './account.js?v=1'; // Thêm version để ép tải lại
 
 document.addEventListener('DOMContentLoaded', () => {
   console.log('DOM fully loaded');
@@ -326,7 +326,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function checkLoginStatus() {
     console.log('Checking login status...');
-    // Đồng bộ trạng thái locked trước khi kiểm tra
     syncLockedStates();
 
     const user = JSON.parse(localStorage.getItem('currentUser') || '{}');
@@ -401,7 +400,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function handleLogin() {
     console.log('login attempt');
-    // Đồng bộ trước khi đăng nhập
     syncLockedStates();
 
     const usernameInput = document.getElementById('username');
@@ -896,5 +894,18 @@ document.addEventListener('DOMContentLoaded', () => {
   } catch (error) {
     console.error('Initialization error:', error);
     showNotification('Có lỗi khi khởi tạo ứng dụng!', 'error');
+  }
+
+  // Đăng ký Service Worker
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/service-worker.js')
+        .then((registration) => {
+          console.log('Service Worker registered:', registration);
+        })
+        .catch((error) => {
+          console.error('Service Worker registration failed:', error);
+        });
+    });
   }
 });
