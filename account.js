@@ -28,7 +28,7 @@ const initialAccounts = [
     password: "password3",
     isAdmin: false,
     locked: false,
-    expiry: Date.now() + 2 * 60 * 60 * 1000
+    expiry: Date.now() + 3 * 60 * 60 * 1000
   }
 ];
 
