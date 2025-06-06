@@ -13,14 +13,14 @@ const initialAccounts = [
     username: "user1",
     password: "password1",
     isAdmin: false,
-    locked: fasle,
+    locked: false,
     expiry: Date.now() + 24 * 60 * 60 * 1000 // Hết hạn sau 24 giờ
   },
   {
     username: "user2",
     password: "password2",
     isAdmin: false,
-    locked: true, // Đã đặt thành true
+    locked: true,
     expiry: Date.now() + 48 * 60 * 60 * 1000 // Hết hạn sau 48 giờ
   },
   {
@@ -59,6 +59,29 @@ function resetAccounts() {
   syncLockedStates();
 }
 
+// Gia hạn tài khoản (chỉ admin "trinhhg" có thể thực hiện)
+function renewAccount(username, hoursToRenew = 24) {
+  const accounts = JSON.parse(localStorage.getItem(ACCOUNTS_STORAGE_KEY)) || initialAccounts;
+  const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+  
+  // Kiểm tra xem người dùng hiện tại có phải admin không
+  if (currentUser.username !== 'trinhhg' || !currentUser.password || currentUser.password !== 'trinhhg572007') {
+    console.error('Only admin "trinhhg" can renew accounts');
+    return false;
+  }
+
+  const account = accounts.find(acc => acc.username === username);
+  if (account && !account.isAdmin) {
+    account.expiry = Date.now() + hoursToRenew * 60 * 60 * 1000; // Gia hạn thêm số giờ
+    localStorage.setItem(ACCOUNTS_STORAGE_KEY, JSON.stringify(accounts));
+    console.log(`Account "${username}" renewed for ${hoursToRenew} hours`);
+    return true;
+  } else {
+    console.error(`Account "${username}" not found or is admin`);
+    return false;
+  }
+}
+
 export function getAccounts() {
   const accounts = JSON.parse(localStorage.getItem(ACCOUNTS_STORAGE_KEY));
   if (!accounts || accounts.length === 0) {
@@ -83,4 +106,4 @@ export function addAccount(account) {
   localStorage.setItem(ACCOUNTS_STORAGE_KEY, JSON.stringify(accounts));
 }
 
-export { syncLockedStates, resetAccounts }; // Đảm bảo export đúng
+export { syncLockedStates, resetAccounts, renewAccount };
