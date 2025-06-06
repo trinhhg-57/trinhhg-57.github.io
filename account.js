@@ -13,7 +13,7 @@ const initialAccounts = [
     username: "user1",
     password: "password1",
     isAdmin: false,
-    locked: false, // Đã sửa thành true
+    locked: true, // Đã sửa thành true
     expiry: Date.now() + 24 * 60 * 60 * 1000
   },
   {
