@@ -36,31 +36,34 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-  event.respondWith(
-    caches.match(event.request)
-      .then((response) => {
-        // Cache hit - return response
-        if (response) {
-          return response;
-        }
-
-        // Clone request để fetch và cache
-        const fetchRequest = event.request.clone();
-
-        return fetch(fetchRequest).then((response) => {
-          if (!response || response.status !== 200 || response.type !== 'basic') {
+  // Chỉ xử lý các yêu cầu từ scheme hợp lệ (http/https)
+  if (event.request.url.startsWith('http://') || event.request.url.startsWith('https://')) {
+    event.respondWith(
+      caches.match(event.request)
+        .then((response) => {
+          // Cache hit - return response
+          if (response) {
             return response;
           }
 
-          // Clone response để cache
-          const responseToCache = response.clone();
-          caches.open(CACHE_NAME)
-            .then((cache) => {
-              cache.put(event.request, responseToCache);
-            });
+          // Clone request để fetch và cache
+          const fetchRequest = event.request.clone();
 
-          return response;
-        });
-      })
-  );
+          return fetch(fetchRequest).then((response) => {
+            if (!response || response.status !== 200 || response.type !== 'basic') {
+              return response;
+            }
+
+            // Clone response để cache
+            const responseToCache = response.clone();
+            caches.open(CACHE_NAME)
+              .then((cache) => {
+                cache.put(event.request, responseToCache); // Chỉ cache nếu scheme hợp lệ
+              });
+
+            return response;
+          });
+        })
+    );
+  }
 });
