@@ -7,32 +7,31 @@ const initialAccounts = [
     password: "trinhhg572007",
     isAdmin: true,
     locked: false,
-    expiry: null // Admin không có thời hạn
+    expiry: null
   },
   {
     username: "user1",
     password: "password1",
     isAdmin: false,
-    locked: true,
-    expiry: Date.now() + 24 * 60 * 60 * 1000 // Hết hạn sau 24 giờ
+    locked: true, // Đã sửa thành true
+    expiry: Date.now() + 24 * 60 * 60 * 1000
   },
   {
     username: "user2",
     password: "password2",
     isAdmin: false,
     locked: true,
-    expiry: Date.now() + 48 * 60 * 60 * 1000 // Hết hạn sau 48 giờ
+    expiry: Date.now() + 48 * 60 * 60 * 1000
   },
   {
     username: "user3",
     password: "password3",
     isAdmin: false,
     locked: false,
-    expiry: Date.now() + 2 * 60 * 60 * 1000 // Hết hạn sau 2 giờ
+    expiry: Date.now() + 2 * 60 * 60 * 1000
   }
 ];
 
-// Đồng bộ trạng thái locked từ initialAccounts
 function syncLockedStates() {
   let storedAccounts = JSON.parse(localStorage.getItem(ACCOUNTS_STORAGE_KEY)) || [];
   let updatedAccounts = [];
@@ -53,18 +52,15 @@ function syncLockedStates() {
   localStorage.setItem(ACCOUNTS_STORAGE_KEY, JSON.stringify(updatedAccounts));
 }
 
-// Reset hoàn toàn localStorage và đồng bộ lại từ initialAccounts
 function resetAccounts() {
   localStorage.removeItem(ACCOUNTS_STORAGE_KEY);
   syncLockedStates();
 }
 
-// Gia hạn tài khoản (chỉ admin "trinhhg" có thể thực hiện)
 function renewAccount(username, hoursToRenew = 24) {
   const accounts = JSON.parse(localStorage.getItem(ACCOUNTS_STORAGE_KEY)) || initialAccounts;
   const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
   
-  // Kiểm tra xem người dùng hiện tại có phải admin không
   if (currentUser.username !== 'trinhhg' || !currentUser.password || currentUser.password !== 'trinhhg572007') {
     console.error('Only admin "trinhhg" can renew accounts');
     return false;
@@ -72,7 +68,7 @@ function renewAccount(username, hoursToRenew = 24) {
 
   const account = accounts.find(acc => acc.username === username);
   if (account && !account.isAdmin) {
-    account.expiry = Date.now() + hoursToRenew * 60 * 60 * 1000; // Gia hạn thêm số giờ
+    account.expiry = Date.now() + hoursToRenew * 60 * 60 * 1000;
     localStorage.setItem(ACCOUNTS_STORAGE_KEY, JSON.stringify(accounts));
     console.log(`Account "${username}" renewed for ${hoursToRenew} hours`);
     return true;
