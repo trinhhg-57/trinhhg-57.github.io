@@ -1,1 +1,17 @@
 
+{
+  "name": "trinhhg-utility",
+  "version": "1.0.0",
+  "description": "A utility tool by Trinh Hg",
+  "scripts": {
+    "start": "serve",
+    "predeploy": "node version-bump.js",
+    "deploy": "gh-pages -d ."
+  },
+  "author": "Trinh Hg",
+  "license": "MIT",
+  "devDependencies": {
+    "serve": "^14.2.0",
+    "gh-pages": "^5.0.0"
+  }
+}
